@@ -1,3 +1,27 @@
+// NOTE: this example uses the chess.js library:
+// https://github.com/jhlywa/chess.js
+var board1 = Chessboard('myBoard', 'start');
+
+var board = null
+var game = new Chess()
+
+function makeRandomMove () {
+  var possibleMoves = game.moves()
+
+  // exit if the game is over
+  if (game.game_over()) return
+
+  var randomIdx = Math.floor(Math.random() * possibleMoves.length)
+  game.move(possibleMoves[randomIdx])
+  board.position(game.fen())
+
+  window.setTimeout(makeRandomMove, 1500)
+}
+
+board = Chessboard('myBoard', 'start')
+
+window.setTimeout(makeRandomMove, 1500)
+
 // Function for connecting to the Multiplayer project
 function playOnline() {
     window.location.href = './multiplayer/index.html';
