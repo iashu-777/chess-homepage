@@ -14,7 +14,7 @@
     <script src="/AI/chess.js"></script>
 
 </head>
-<body>
+<body style="background-color: black;">
     <!-- Chess Arena Logo -->
     <header class="logo">
         <h1>Chess Arena</h1>
@@ -40,15 +40,17 @@
             <!-- Chessboard -->
             <div id="myBoard" style="width: 450px"></div>
                 <!-- Placeholder for chessboard.js implementation -->
-                 
-                <p>Loading Chess Game...</p>
-            </div>
+                
 
             <!-- Heading and Buttons -->
             <div class="right-section">
-                <h2>Play, Chess Arena where Every Move Matters</h2>
-                <button onclick="playOnline()">Play Online</button>
-                <button onclick="playBots()">Play Bots</button>
+                <h2 style="color: white;">Play, Chess Arena where Every Move Matters</h2>
+                <button onclick="playOnline()">Play Online
+                    <div>Find rivals at your skill level</div>
+                </button>
+                <button onclick="playBots()">Play Bots
+                    <div>Refine Your Game with Smart Training Bots!</div>
+                </button>
             </div>
         </main>
     </div>
