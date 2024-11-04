@@ -24,12 +24,12 @@ window.setTimeout(makeRandomMove, 1500)
 
 // Function for connecting to the Multiplayer project
 function playOnline() {
-    window.location.href = './multiplayer/index.html';
+    window.location.href = './index_multiplayer.html';
 }
 
 // Function for connecting to the AI Integrated project
 function playBots() {
-    window.location.href = './AI/index.html';
+    window.location.href = './index_AI.html';
 }
 
 // Load the chessboard for a random vs. random game (using chessboard.js)
