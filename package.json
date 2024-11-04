@@ -5,14 +5,34 @@
     "vite": "^5.4.10",
     "vue": "^3.5.12"
   },
-  "name": "your-project-name",
+  
+  
+
+  "name": "chess-arena",
   "version": "1.0.0",
+  "description": "A multiplayer chess game built with Vue, Vite, Express, and Socket.io",
+  "main": "socket.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node socket.js"
+    "start": "node socket.js" 
+  },
+ 
+  "devDependencies": {
+    "vite": "^4.0.0",
+    "@vitejs/plugin-vue": "^4.0.0"
   },
   "engines": {
-    "node": "20.x"
-  }
+    "node": ">=14.x"
+  },
+  "keywords": [
+    "chess",
+    "multiplayer",
+    "vue",
+    "vite",
+    "socket.io",
+    "express"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
 }
