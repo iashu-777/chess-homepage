@@ -151,7 +151,8 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-const socket = io('http://localhost:3000');
+// const socket = io('http://localhost:3000');
+const socket=io('https://chess-arena.vercel.app/');
 
 
 socket.on('total_players_count_change', function (totalPlayersCount) {
