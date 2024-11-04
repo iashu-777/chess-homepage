@@ -12,15 +12,19 @@
   "version": "1.0.0",
   "description": "A multiplayer chess game built with Vue, Vite, Express, and Socket.io",
   "main": "socket.js",
+  
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node socket.js" 
+    "start": "pm2 start socket.js --name socket-server",
+    "stop": "pm2 stop socket-server",
+    "restart": "pm2 restart socket-server"
   },
  
   "devDependencies": {
     "vite": "^4.0.0",
-    "@vitejs/plugin-vue": "^4.0.0"
+    "@vitejs/plugin-vue": "^4.0.0",
+    "pm2": "^5.3.0"
   },
   "engines": {
     "node": ">=14.x"
