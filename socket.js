@@ -4,7 +4,7 @@ const PORT = 3000;
 const httpServer = createServer();
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://prismatic-lamington-297b85.netlify.app/",
+    origin: "*",
     methods: ["*"]
   }
 });
