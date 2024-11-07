@@ -5,35 +5,39 @@ FROM node:18 AS build-stage
 WORKDIR /app
 
 # Copy package.json and package-lock.json for installing dependencies
-COPY package.json package-lock.json ./
+COPY package.json package-lock.json ./ 
 
-# Install dependencies
+# Install frontend dependencies
 RUN npm install
 
-# Copy the rest of the application files
+# Copy the rest of the application files (frontend code)
 COPY . .
 
-# Build the frontend
+# Build the frontend with Vite
 RUN npm run build
 
-# Stage 2: Serve the application
+# Stage 2: Prepare the production image (backend and frontend)
 FROM node:18-alpine
 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy only the necessary files from the build stage
-COPY --from=build-stage /app/package.json /app/package-lock.json /app
-COPY --from=build-stage /app/dist /app/dist
+# Install necessary dependencies for the backend
+# (Ensure you install both frontend and backend dependencies)
+COPY package.json package-lock.json /app/
 
-# Reinstall only production dependencies
+# Reinstall only production dependencies for both frontend and backend
 RUN npm install --only=production
 
-# Copy the backend source code (assumes your backend code is in the same project)
-COPY --from=build-stage /app/socket.js /app
+# Copy the build frontend assets from the previous stage to serve them
+COPY --from=build-stage /app/dist /app/dist
 
-# Expose the port for the application
+# Copy backend files (socket.js, stockfish, etc.)
+COPY --from=build-stage /app/socket.js /app/
+COPY --from=build-stage /app/stockfish/ /app/stockfish/ # Copy the Stockfish binary
+
+# Expose the port your app will run on
 EXPOSE 3000
 
-# Command to start the application
+# Command to run your application (start backend)
 CMD ["node", "socket.js"]
