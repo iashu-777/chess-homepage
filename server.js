@@ -6,9 +6,11 @@ const PORT = 3000;
 app.get('/move', (req, res) => {
     const fen = req.query.fen;
     const depth = req.query.depth || 10;
+    console.log(`Received request: fen=${fen}, depth=${depth}`);
+
 
     // Make sure the Stockfish path is correctly set
-    const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
+    const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
     const stockfish = spawn(stockfishPath);
 
     stockfish.stdin.write(`position fen ${fen}\n`);
@@ -16,6 +18,8 @@ app.get('/move', (req, res) => {
 
     stockfish.stdout.on('data', (data) => {
         const output = data.toString();
+        console.log(output); // Add logging to see what Stockfish is returning
+
         if (output.includes('bestmove')) {
             const bestMove = output.split('bestmove ')[1].split(' ')[0];
             res.json({ success: true, bestmove: bestMove });

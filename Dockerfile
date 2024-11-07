@@ -23,7 +23,6 @@ FROM node:18-alpine
 WORKDIR /app
 
 # Install necessary dependencies for the backend
-# (Ensure you install both frontend and backend dependencies)
 COPY package.json package-lock.json /app/
 
 # Reinstall only production dependencies for both frontend and backend
@@ -35,10 +34,15 @@ COPY --from=build-stage /app/dist /app/dist
 # Copy backend files (socket.js, stockfish, etc.)
 COPY --from=build-stage /app/socket.js /app/
 COPY --from=build-stage /app/stockfish/ /app/stockfish/ 
-# Copy the Stockfish binary
+
+# Set the Stockfish binary to be executable
+RUN chmod +x /app/stockfish/stockfish_21_x64_bmi2
 
 # Expose the port your app will run on
 EXPOSE 3000
+
+# Set environment variables (optional, if needed for customization)
+# COPY .env .env  # Optional: Copy .env file if you use environment variables
 
 # Command to run your application (start backend)
 CMD ["node", "socket.js"]
