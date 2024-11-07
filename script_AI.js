@@ -22,7 +22,7 @@ function makeAIMove() {
     console.log("Current FEN: " + currentFEN);
 
     // Define the API endpoint and parameters
-    const apiUrl = `http://localhost:3000/move?fen=${encodeURIComponent(currentFEN)}&depth=6`;
+    const apiUrl = `https://chess-homepage-production.up.railway.app/move?fen=${encodeURIComponent(currentFEN)}&depth=6`;
 
     // Make the GET request to the Stockfish API
     $.ajax({
