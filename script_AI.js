@@ -29,7 +29,7 @@ function makeAIMove() {
         url: apiUrl,
         method: "GET",
         dataType: "json",
-        timeout: 10000,  // Set a longer timeout (10 seconds)
+        timeout: 30000,  // Set a longer timeout (10 seconds)
         success: function (response) {
             console.log("Server response:", response); // Log response for debugging
             

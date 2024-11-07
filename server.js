@@ -1,56 +1,40 @@
 const http = require('http');
 const { spawn } = require('child_process');
 
-// Define the port
 const PORT = 3000;
 
-// Create the HTTP server
+// Create a basic HTTP server
 const server = http.createServer((req, res) => {
-    // Increase timeout duration (10 minutes in this case)
-    req.setTimeout(600000);  // 10 minutes
-
-    if (req.method === 'GET' && req.url.startsWith('/move')) {
-        // Parse the query parameters from the URL
-        const url = new URL(req.url, `http://${req.headers.host}`);
-        const fen = url.searchParams.get('fen');
-        const depth = url.searchParams.get('depth') || 10;
+    // Only respond to the '/move' route
+    if (req.url.startsWith('/move') && req.method === 'GET') {
+        const urlParams = new URLSearchParams(req.url.split('?')[1]);
+        const fen = urlParams.get('fen');
+        const depth = urlParams.get('depth') || 10;
 
         console.log(`Received request: fen=${fen}, depth=${depth}`);
 
-        // Check if fen is provided, if not return a 400 error
-        if (!fen) {
-            res.writeHead(400, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'FEN is required' }));
-            return;
-        }
-
-        // Set the path to your Stockfish binary
+        // Ensure Stockfish path is correct
         const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
         const stockfish = spawn(stockfishPath);
 
-        // Write the position and depth to Stockfish
         stockfish.stdin.write(`position fen ${fen}\n`);
         stockfish.stdin.write(`go depth ${depth}\n`);
 
-        // Listen for data from Stockfish's stdout
         stockfish.stdout.on('data', (data) => {
             const output = data.toString();
-            console.log(output); // Log Stockfish output for debugging
+            console.log(output); // Log output for debugging
 
-            // Check if we have the best move in the output
             if (output.includes('bestmove')) {
                 const bestMove = output.split('bestmove ')[1].split(' ')[0];
 
-                // Send the best move as a JSON response
+                // Set the response headers for JSON content
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, bestmove: bestMove }));
 
-                // Kill the Stockfish process after we get the best move
+                res.end(JSON.stringify({ success: true, bestmove: bestMove }));
                 stockfish.kill();
             }
         });
 
-        // Handle any errors from Stockfish
         stockfish.stderr.on('data', (data) => {
             console.error(`Error: ${data}`);
         });
@@ -60,11 +44,10 @@ const server = http.createServer((req, res) => {
             res.writeHead(500, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify({ success: false, error: 'Failed to run Stockfish.' }));
         });
-
     } else {
-        // If the request is not for '/move', return a 404 error
-        res.writeHead(404, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ success: false, error: 'Not Found' }));
+        // Handle other routes
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        res.end('Not Found');
     }
 });
 
