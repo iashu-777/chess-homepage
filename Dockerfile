@@ -34,7 +34,8 @@ COPY --from=build-stage /app/dist /app/dist
 
 # Copy backend files (socket.js, stockfish, etc.)
 COPY --from=build-stage /app/socket.js /app/
-COPY --from=build-stage /app/stockfish/ /app/stockfish/ # Copy the Stockfish binary
+COPY --from=build-stage /app/stockfish/ /app/stockfish/ 
+# Copy the Stockfish binary
 
 # Expose the port your app will run on
 EXPOSE 3000
