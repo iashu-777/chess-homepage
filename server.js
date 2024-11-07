@@ -8,7 +8,7 @@ app.get('/move', (req, res) => {
     const depth = req.query.depth || 10;
 
     // Make sure the Stockfish path is correctly set
-    const stockfishPath = './stockfish/stockfish-ubuntu-x86-64-avx512';
+    const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
     const stockfish = spawn(stockfishPath);
 
     stockfish.stdin.write(`position fen ${fen}\n`);
