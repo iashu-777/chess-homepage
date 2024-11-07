@@ -29,23 +29,24 @@ function makeAIMove() {
         url: apiUrl,
         method: "GET",
         dataType: "json",
+        timeout: 10000,  // Set a longer timeout (10 seconds)
         success: function (response) {
             console.log("Server response:", response); // Log response for debugging
-
+            
             if (response && response.success && response.bestmove) {
                 const bestMove = response.bestmove;
-
-                // Ensure bestMove is long enough before calling substring
+                
+                // Make sure bestMove is long enough before calling substring
                 if (bestMove.length >= 4) {
                     const fromSquare = bestMove.substring(0, 2);
                     const toSquare = bestMove.substring(2, 4);
-
+    
                     const move = game.move({
                         from: fromSquare,
                         to: toSquare,
                         promotion: 'q' // Promote to queen if applicable
                     });
-
+    
                     if (move) {
                         // Update the board with the new position
                         board.position(game.fen());
@@ -63,6 +64,7 @@ function makeAIMove() {
             console.error("Error fetching move from Stockfish API: " + xhr.status + " - " + xhr.statusText);
         }
     });
+    
 }
 
 function onDrop(source, target) {
