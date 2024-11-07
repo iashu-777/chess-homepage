@@ -6,6 +6,9 @@ const PORT = 3000;
 
 // Create the HTTP server
 const server = http.createServer((req, res) => {
+    // Increase timeout duration (10 minutes in this case)
+    req.setTimeout(600000);  // 10 minutes
+
     if (req.method === 'GET' && req.url.startsWith('/move')) {
         // Parse the query parameters from the URL
         const url = new URL(req.url, `http://${req.headers.host}`);
