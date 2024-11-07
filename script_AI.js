@@ -11,55 +11,59 @@ function onDragStart(source, piece, position, orientation) {
 }
 
 function makeAIMove() {
-  // Check if the game is over
-  if (game.game_over()) {
-      console.log("Game over: no moves possible.");
-      return;
-  }
+    // Check if the game is over
+    if (game.game_over()) {
+        console.log("Game over: no moves possible.");
+        return;
+    }
 
-  // Log the current FEN string for debugging
-  const currentFEN = game.fen();
-  console.log("Current FEN: " + currentFEN);
+    // Log the current FEN string for debugging
+    const currentFEN = game.fen();
+    console.log("Current FEN: " + currentFEN);
 
-  // Define the API endpoint and parameters
-  const apiUrl = `https://stockfish.online/api/s/v2.php?fen=${encodeURIComponent(currentFEN)}&depth=15`; // You can adjust the depth as needed
+    // Define the API endpoint and parameters
+    const apiUrl = `http://localhost:3000/move?fen=${encodeURIComponent(currentFEN)}&depth=6`;
 
-  // Make the GET request to the Stockfish API
-  $.ajax({
-      url: apiUrl,
-      method: "GET",
-      dataType: "json",
-      success: function (response) {
-          if (response.success) {
-              // Extract the best move from the response
-              const bestMove = response.bestmove.split(" ")[1]; // Get only the move part (e.g., "b7b6")
+    // Make the GET request to the Stockfish API
+    $.ajax({
+        url: apiUrl,
+        method: "GET",
+        dataType: "json",
+        success: function (response) {
+            console.log("Server response:", response); // Log response for debugging
+            
+            if (response && response.success && response.bestmove) {
+                const bestMove = response.bestmove;
+                
+                // Make sure bestMove is long enough before calling substring
+                if (bestMove.length >= 4) {
+                    const fromSquare = bestMove.substring(0, 2);
+                    const toSquare = bestMove.substring(2, 4);
 
-              // Make the move in the game
-              const fromSquare = bestMove.substring(0, 2);
-              const toSquare = bestMove.substring(2, 4);
+                    const move = game.move({
+                        from: fromSquare,
+                        to: toSquare,
+                        promotion: 'q' // promote to queen if applicable
+                    });
 
-              const move = game.move({
-                  from: fromSquare,
-                  to: toSquare,
-                  promotion: 'q' // promote to queen if applicable
-              });
-
-              if (move) {
-                  // Update the board with the new position
-                  board.position(game.fen());
-              } else {
-                  console.error("Illegal move attempted: " + bestMove);
-              }
-          } else {
-              console.error("Stockfish API error: " + response.data);
-          }
-      },
-      error: function (xhr) {
-          console.error("Error fetching move from Stockfish API: " + xhr.status + " - " + xhr.statusText);
-      }
-  });
+                    if (move) {
+                        // Update the board with the new position
+                        board.position(game.fen());
+                    } else {
+                        console.error("Illegal move attempted: " + bestMove);
+                    }
+                } else {
+                    console.error("Invalid move format: " + bestMove);
+                }
+            } else {
+                console.error("Stockfish API error: unexpected response format", response);
+            }
+        },
+        error: function (xhr) {
+            console.error("Error fetching move from Stockfish API: " + xhr.status + " - " + xhr.statusText);
+        }
+    });
 }
-
 
 
 
