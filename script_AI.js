@@ -3,10 +3,10 @@ var board = null;
 var game = new Chess();
 
 function onDragStart(source, piece, position, orientation) {
-    // do not pick up pieces if the game is over
+    // Do not pick up pieces if the game is over
     if (game.game_over()) return false;
 
-    // only pick up pieces for White
+    // Only pick up pieces for White (if the piece is black, return false)
     if (piece.search(/^b/) !== -1) return false;
 }
 
@@ -31,11 +31,11 @@ function makeAIMove() {
         dataType: "json",
         success: function (response) {
             console.log("Server response:", response); // Log response for debugging
-            
+
             if (response && response.success && response.bestmove) {
                 const bestMove = response.bestmove;
-                
-                // Make sure bestMove is long enough before calling substring
+
+                // Ensure bestMove is long enough before calling substring
                 if (bestMove.length >= 4) {
                     const fromSquare = bestMove.substring(0, 2);
                     const toSquare = bestMove.substring(2, 4);
@@ -43,7 +43,7 @@ function makeAIMove() {
                     const move = game.move({
                         from: fromSquare,
                         to: toSquare,
-                        promotion: 'q' // promote to queen if applicable
+                        promotion: 'q' // Promote to queen if applicable
                     });
 
                     if (move) {
@@ -65,36 +65,33 @@ function makeAIMove() {
     });
 }
 
-
-
-
-
 function onDrop(source, target) {
-    // see if the move is legal
+    // Check if the move is legal
     var move = game.move({
         from: source,
         to: target,
-        promotion: 'q' // NOTE: always promote to a queen for simplicity
+        promotion: 'q' // NOTE: Always promote to a queen for simplicity
     });
 
-    // illegal move
+    // If the move is illegal, snap the piece back
     if (move === null) return 'snapback';
 
-    // Make AI move for black
+    // Make the AI move for black after a short delay (250ms)
     window.setTimeout(makeAIMove, 250);
 }
 
-// update the board position after the piece snap
-// for castling, en passant, pawn promotion
+// Update the board position after the piece snap for castling, en passant, pawn promotion, etc.
 function onSnapEnd() {
     board.position(game.fen());
 }
 
 var config = {
     draggable: true,
-    position: 'start',
-    onDragStart: onDragStart,
-    onDrop: onDrop,
-    onSnapEnd: onSnapEnd
+    position: 'start', // Initial position is set to 'start'
+    onDragStart: onDragStart, // Function to call when dragging starts
+    onDrop: onDrop, // Function to call when a piece is dropped
+    onSnapEnd: onSnapEnd, // Function to update the board after move completion
 };
+
+// Initialize the chessboard
 board = Chessboard('myBoard', config);
