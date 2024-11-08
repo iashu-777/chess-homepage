@@ -31,7 +31,7 @@ COPY --from=build-stage /app/server.js /app/
 COPY --from=build-stage /app/stockfish/stockfish-ubuntu-x86-64-bmi2.bin /app/stockfish/stockfish-ubuntu-x86-64-bmi2.bin
 
 # Set executable permissions to the Stockfish binary
-RUN chmod 755 /app/stockfish/stockfish-ubuntu-x86-64-bmi2
+RUN chmod 755 /app/stockfish/stockfish-ubuntu-x86-64-bmi2.bin
 
 # Expose the application port
 EXPOSE 3000
