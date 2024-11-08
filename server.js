@@ -28,51 +28,29 @@ app.get('/move', (req, res) => {
     const fen = req.query.fen;
     const depth = req.query.depth || 10;
 
-    console.log(`Received request: fen=${fen}, depth=${depth}`);
-
-    // Check if Stockfish binary exists and is executable
-    if (!fs.existsSync(stockfishPath)) {
-        return res.status(500).json({ success: false, error: 'Stockfish binary not found' });
-    }
-
+    // Make sure the Stockfish path is correctly set
+    const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
     const stockfish = spawn(stockfishPath);
-
-    // Timeout for hanging responses
-    const timeout = setTimeout(() => {
-        stockfish.kill();
-        res.status(504).json({ success: false, error: 'Request timed out' });
-    }, 25000); // 25-second timeout
 
     stockfish.stdin.write(`position fen ${fen}\n`);
     stockfish.stdin.write(`go depth ${depth}\n`);
 
     stockfish.stdout.on('data', (data) => {
         const output = data.toString();
-        console.log(output);
-
         if (output.includes('bestmove')) {
-            clearTimeout(timeout);
             const bestMove = output.split('bestmove ')[1].split(' ')[0];
-            res.status(200).json({ success: true, bestmove: bestMove });
+            res.json({ success: true, bestmove: bestMove });
             stockfish.kill();
         }
     });
 
     stockfish.stderr.on('data', (data) => {
-        console.error(`Error from Stockfish: ${data}`);
-        clearTimeout(timeout);
-        res.status(500).json({ success: false, error: 'Internal Server Error' });
+        console.error(`Error: ${data}`);
     });
 
     stockfish.on('error', (err) => {
         console.error(`Failed to start Stockfish: ${err}`);
-        clearTimeout(timeout);
-        res.status(500).json({ 
-            success: false, 
-            error: err.code === 'EACCES' ? 
-                   'Permission denied to execute Stockfish.' : 
-                   'Failed to run Stockfish.' 
-        });
+        res.status(500).json({ success: false, error: 'Failed to run Stockfish.' });
     });
 });
 

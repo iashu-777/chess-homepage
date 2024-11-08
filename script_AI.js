@@ -29,7 +29,6 @@ function makeAIMove() {
         url: apiUrl,
         method: "GET",
         dataType: "json",
-        timeout: 30000,  // Set a longer timeout (10 seconds)
         success: function (response) {
             console.log("Server response:", response); // Log response for debugging
             
@@ -40,13 +39,13 @@ function makeAIMove() {
                 if (bestMove.length >= 4) {
                     const fromSquare = bestMove.substring(0, 2);
                     const toSquare = bestMove.substring(2, 4);
-    
+
                     const move = game.move({
                         from: fromSquare,
                         to: toSquare,
-                        promotion: 'q' // Promote to queen if applicable
+                        promotion: 'q' // promote to queen if applicable
                     });
-    
+
                     if (move) {
                         // Update the board with the new position
                         board.position(game.fen());
@@ -65,7 +64,6 @@ function makeAIMove() {
         }
     });
 }
-
 function onDrop(source, target) {
     // Check if the move is legal
     var move = game.move({
