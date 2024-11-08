@@ -1,31 +1,40 @@
 # Stage 1: Build the Vite frontend
 FROM node:18 AS build-stage
 
+# Set the working directory
 WORKDIR /app
 
+# Copy and install dependencies
 COPY package.json package-lock.json ./
 RUN npm install
+
+# Copy all files and build the frontend
 COPY . .
 RUN npm run build
 
 # Stage 2: Prepare the production image
 FROM node:18-alpine
 
+# Set the working directory
 WORKDIR /app
 
+# Copy package files and install only production dependencies
 COPY package.json package-lock.json ./
 RUN npm install --only=production
 
 # Copy the built frontend assets and backend files
 COPY --from=build-stage /app/dist /app/dist
 COPY --from=build-stage /app/socket.js /app/
-COPY --from=build-stage /app/stockfish /app/stockfish/stockfish-ubuntu-x86-64-bmi2
-RUN chmod +x /app/stockfish/stockfish-ubuntu-x86-64-bmi2
 COPY --from=build-stage /app/server.js /app/
 
-# Ensure Stockfish binary is executable
+# Copy the Stockfish binary and ensure it’s executable
+COPY --from=build-stage /app/stockfish/stockfish-ubuntu-x86-64-bmi2 /app/stockfish/stockfish-ubuntu-x86-64-bmi2
 
+# Set executable permissions to the Stockfish binary
+RUN chmod 755 /app/stockfish/stockfish-ubuntu-x86-64-bmi2
+
+# Expose the application port
 EXPOSE 3000
 
-# Use the start command to start the server without pm2
+# Start the server without PM2
 CMD ["node", "server.js"]

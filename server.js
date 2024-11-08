@@ -1,6 +1,7 @@
 const express = require('express');
 const { spawn } = require('child_process');
-const cors = require('cors');  // To handle CORS easily
+const cors = require('cors');
+const fs = require('fs');  // To check file existence and permissions
 
 const app = express();
 const PORT = 3000;
@@ -12,6 +13,16 @@ app.use(cors({
     allowedHeaders: ['Content-Type']
 }));
 
+// Stockfish binary path
+const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
+
+// Check if Stockfish binary exists and is executable
+if (!fs.existsSync(stockfishPath)) {
+    console.error(`Stockfish binary not found at ${stockfishPath}`);
+} else if (!fs.statSync(stockfishPath).mode & fs.constants.X_OK) {
+    console.error(`Stockfish binary found but not executable: ${stockfishPath}`);
+}
+
 // Move route handling to Express
 app.get('/move', (req, res) => {
     const fen = req.query.fen;
@@ -19,7 +30,11 @@ app.get('/move', (req, res) => {
 
     console.log(`Received request: fen=${fen}, depth=${depth}`);
 
-    const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
+    // Check if Stockfish binary exists and is executable
+    if (!fs.existsSync(stockfishPath)) {
+        return res.status(500).json({ success: false, error: 'Stockfish binary not found' });
+    }
+
     const stockfish = spawn(stockfishPath);
 
     // Timeout for hanging responses
@@ -44,7 +59,7 @@ app.get('/move', (req, res) => {
     });
 
     stockfish.stderr.on('data', (data) => {
-        console.error(`Error: ${data}`);
+        console.error(`Error from Stockfish: ${data}`);
         clearTimeout(timeout);
         res.status(500).json({ success: false, error: 'Internal Server Error' });
     });
@@ -52,7 +67,12 @@ app.get('/move', (req, res) => {
     stockfish.on('error', (err) => {
         console.error(`Failed to start Stockfish: ${err}`);
         clearTimeout(timeout);
-        res.status(500).json({ success: false, error: 'Failed to run Stockfish.' });
+        res.status(500).json({ 
+            success: false, 
+            error: err.code === 'EACCES' ? 
+                   'Permission denied to execute Stockfish.' : 
+                   'Failed to run Stockfish.' 
+        });
     });
 });
 
