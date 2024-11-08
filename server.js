@@ -14,7 +14,7 @@ app.use(cors({
 }));
 
 // Stockfish binary path
-const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
+const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2.bin';
 
 // Check if Stockfish binary exists and is executable
 if (!fs.existsSync(stockfishPath)) {
