@@ -10,7 +10,7 @@ const server = http.createServer((req, res) => {
 
         console.log(`Received request: fen=${fen}, depth=${depth}`);
 
-        const stockfishPath = './stockfish/stockfish-ubuntu-x86-64-bmi2';
+        const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
         const stockfish = spawn(stockfishPath);
 
         // Timeout for hanging responses
