@@ -1,5 +1,5 @@
 const express = require("express");
-const { execFile } = require("child_process");
+const { spawn } = require("child_process");
 const cors = require("cors");
 const fs = require("fs");
 
@@ -29,18 +29,29 @@ app.get("/move", (req, res) => {
   const fen = req.query.fen;
   const depth = req.query.depth || 10;
 
-  // Run Stockfish with FEN and depth commands using execFile
-  const stockfish = execFile(stockfishPath, [], { shell: false }, (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Failed to start Stockfish: ${error.message}`);
-      return res.status(500).json({ success: false, error: "Failed to run Stockfish." });
-    }
-    if (stderr) {
-      console.error(`Stockfish error output: ${stderr}`);
+  // Run Stockfish with FEN and depth commands using spawn
+  const stockfish = spawn(stockfishPath);
+
+  let output = "";
+
+  // Collect data from Stockfish output
+  stockfish.stdout.on("data", (data) => {
+    output += data.toString();
+  });
+
+  // Handle error output from Stockfish
+  stockfish.stderr.on("data", (data) => {
+    console.error(`Stockfish error output: ${data}`);
+  });
+
+  // Detect when Stockfish process ends
+  stockfish.on("close", (code) => {
+    if (code !== 0) {
+      console.error(`Stockfish process exited with code ${code}`);
+      return res.status(500).json({ success: false, error: "Stockfish process failed." });
     }
 
     // Process Stockfish output to find the best move
-    const output = stdout.toString();
     if (output.includes("bestmove")) {
       const bestMove = output.split("bestmove ")[1].split(" ")[0];
       return res.json({ success: true, bestmove: bestMove });
@@ -50,11 +61,9 @@ app.get("/move", (req, res) => {
   });
 
   // Send FEN and depth commands to Stockfish
-  if (stockfish.stdin) {
-    stockfish.stdin.write(`position fen ${fen}\n`);
-    stockfish.stdin.write(`go depth ${depth}\n`);
-    stockfish.stdin.end();
-  }
+  stockfish.stdin.write(`position fen ${fen}\n`);
+  stockfish.stdin.write(`go depth ${depth}\n`);
+  stockfish.stdin.end();
 });
 
 // Handle undefined routes
