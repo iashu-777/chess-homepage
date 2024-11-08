@@ -10,7 +10,7 @@ const PORT = 3000;
 
 app.use(
   cors({
-    origin: "https://prismatic-lamington-297b85.netlify.app",
+    origin: "https://prismatic-lamington-297b85.netlify.app/index_ai",
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
   })
