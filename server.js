@@ -7,6 +7,7 @@ const app = express();
 const PORT = 3000;
 
 // Configure CORS
+
 app.use(
   cors({
     origin: "https://prismatic-lamington-297b85.netlify.app",
@@ -16,7 +17,7 @@ app.use(
 );
 
 // Stockfish binary path
-const stockfishPath = "/app/stockfish-ubuntu-x86-64-bmi2";
+const stockfishPath = "/app/stockfish-ubuntu-x86-64-avx2";
 
 // Check if Stockfish binary exists and is executable
 if (!fs.existsSync(stockfishPath)) {

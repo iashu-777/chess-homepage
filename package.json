@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "node server.js & node socket.js",  
+    "start": "node server.js & node socket.js",
     "serve": "vite preview",
     "stop": "pkill -f 'node server.js' && pkill -f 'node socket.js'",
     "restart": "npm run stop && npm run start"
