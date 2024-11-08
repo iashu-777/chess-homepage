@@ -18,10 +18,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "pm2 start server.js && pm2 start socket.js",
+    "start": "node server.js & node socket.js",
     "serve": "vite preview",
-    "stop": "pm2 stop server && pm2 stop socket",
-    "restart": "pm2 restart server && pm2 restart socket"
+    "stop": "pkill -f 'node server.js' && pkill -f 'node socket.js'",
+    "restart": "npm run stop && npm run start"
   },
   "engines": {
     "node": ">=14.x"
