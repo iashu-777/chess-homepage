@@ -19,7 +19,7 @@ RUN npm install --only=production
 # Copy the built frontend assets and backend files
 COPY --from=build-stage /app/dist /app/dist
 COPY --from=build-stage /app/socket.js /app/
-COPY --from=build-stage /app/stockfish /app/stockfish/stockfish-ubuntu-x86-64-bmi2
+COPY --from=build-stage /app/stockfish /app/stockfish/
 RUN chmod +x /app/stockfish/stockfish-ubuntu-x86-64-bmi2
 COPY --from=build-stage /app/server.js /app/
 
