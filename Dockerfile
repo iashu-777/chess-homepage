@@ -33,7 +33,7 @@ COPY --from=build-stage /app/dist /app/dist
 
 # Copy backend files (socket.js, stockfish, etc.)
 COPY --from=build-stage /app/socket.js /app/
-COPY --from=build-stage /app/stockfish/stockfish-ubuntu-x86-64-bmi2 /app/stockfish
+COPY --from=build-stage /app/stockfish /app/stockfish/stockfish-ubuntu-x86-64-bmi2
 COPY --from=build-stage /app/server.js /app/ 
 
 # Set the Stockfish binary to be executable
