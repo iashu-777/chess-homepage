@@ -14,7 +14,7 @@ app.use(cors({
 }));
 
 // Stockfish binary path (for Windows executable)
-const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
+const stockfishPath = '/app/stockfish-windows-x86-64.exe';
 
 // Check if Stockfish binary exists and is executable
 if (!fs.existsSync(stockfishPath)) {

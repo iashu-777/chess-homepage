@@ -28,7 +28,8 @@ COPY --from=build-stage /app/socket.js /app/
 COPY --from=build-stage /app/server.js /app/
 
 # Copy the Stockfish binary for Windows
-COPY --from=build-stage /app/stockfish /app/stockfish/
+
+COPY --from=build-stage /app/stockfish-windows-x86-64.exe /app/
 
 # Set executable permissions to the Stockfish binary (for Windows)
 RUN chmod 755 /app/stockfish/stockfish-windows-x86-64.exe
