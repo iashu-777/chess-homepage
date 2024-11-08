@@ -32,7 +32,7 @@ COPY --from=build-stage /app/server.js /app/
 COPY --from=build-stage /app/stockfish-windows-x86-64.exe /app/
 
 # Set executable permissions to the Stockfish binary (for Windows)
-RUN chmod 755 /app/stockfish/stockfish-windows-x86-64.exe
+RUN chmod 755 /app/stockfish-windows-x86-64.exe
 
 # Expose the application port
 EXPOSE 3000
