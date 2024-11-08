@@ -62,9 +62,14 @@ function makeAIMove() {
         },
         error: function (xhr) {
             console.error("Error fetching move from Stockfish API: " + xhr.status + " - " + xhr.statusText);
+            if (retries > 0) {
+                setTimeout(() => attemptMove(retries - 1), 1000);
+            } else {
+                console.error("Exceeded retry attempts");
+            }
         }
     });
-    
+    attemptMove();
 }
 
 function onDrop(source, target) {

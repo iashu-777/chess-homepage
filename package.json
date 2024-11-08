@@ -16,13 +16,14 @@
     "pm2": "^5.3.0"
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "pm2 start server.js && pm2 start socket.js", 
-    "serve": "vite preview",
-    "stop": "pm2 stop server.js && pm2 stop socket.js", 
-    "restart": "pm2 restart server.js && pm2 restart socket.js"
-  },
+  "dev": "vite",
+  "build": "vite build",
+  "start": "node server.js & node socket.js",
+  "serve": "vite preview",
+  "stop": "pkill -f 'node server.js' && pkill -f 'node socket.js'",
+  "restart": "npm run stop && npm run start"
+},
+
   "engines": {
     "node": ">=14.x"
   },
