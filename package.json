@@ -5,6 +5,7 @@
   "main": "socket.js",
   "dependencies": {
     "child_process": "^1.0.2",
+    "cors": "^2.8.5",
     "express": "^4.21.1",
     "socket.io": "^4.8.0",
     "stockfish": "^16.0.0",
@@ -16,14 +17,13 @@
     "pm2": "^5.3.0"
   },
   "scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "start": "node server.js & node socket.js",
-  "serve": "vite preview",
-  "stop": "pkill -f 'node server.js' && pkill -f 'node socket.js'",
-  "restart": "npm run stop && npm run start"
-},
-
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.js & node socket.js",
+    "serve": "vite preview",
+    "stop": "pkill -f 'node server.js' && pkill -f 'node socket.js'",
+    "restart": "npm run stop && npm run start"
+  },
   "engines": {
     "node": ">=14.x"
   },
