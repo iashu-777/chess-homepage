@@ -29,10 +29,9 @@ COPY --from=build-stage /app/server.js /app/
 
 # Copy the Stockfish binary for Windows
 
-COPY --from=build-stage /app/stockfish-ubuntu-x86-64-bmi2 /app/
+COPY stockfish-ubuntu-x86-64-bmi2 /app/stockfish-ubuntu-x86-64-bmi2
+RUN chmod +x /app/stockfish-ubuntu-x86-64-bmi2  # Ensure it is executable
 
-# Set executable permissions to the Stockfish binary (for Windows)
-RUN chmod 755 /app/stockfish-ubuntu-x86-64-bmi2
 
 # Expose the application port
 EXPOSE 3000
