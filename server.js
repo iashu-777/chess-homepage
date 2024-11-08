@@ -2,9 +2,7 @@
 const http = require('http');
 const { spawn } = require('child_process');
 const PORT = 3000;
-app.use(cors({
-    origin: 'https://prismatic-lamington-297b85.netlify.app'  // Replace with your Netlify URL
-  }));
+
 const server = http.createServer((req, res) => {
     // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', 'https://prismatic-lamington-297b85.netlify.app');  // Replace with your Netlify URL
@@ -17,7 +15,7 @@ const server = http.createServer((req, res) => {
     res.end();
     return;
   }
-  
+
     if (req.url.startsWith('/move') && req.method === 'GET') {
         const urlParams = new URLSearchParams(req.url.split('?')[1]);
         const fen = urlParams.get('fen');
