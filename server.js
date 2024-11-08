@@ -1,73 +1,67 @@
-
-const http = require('http');
+const express = require('express');
 const { spawn } = require('child_process');
+const cors = require('cors');  // To handle CORS easily
+
+const app = express();
 const PORT = 3000;
 
-const server = http.createServer((req, res) => {
-    // Set CORS headers
-  res.setHeader('Access-Control-Allow-Origin', 'https://prismatic-lamington-297b85.netlify.app');  // Replace with your Netlify URL
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');  // Allow methods
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');  // Allow headers
+// Configure CORS
+app.use(cors({
+    origin: 'https://prismatic-lamington-297b85.netlify.app', // Replace with your Netlify URL
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type']
+}));
 
-  // Handle OPTIONS preflight request
-  if (req.method === 'OPTIONS') {
-    res.writeHead(204);
-    res.end();
-    return;
-  }
+// Move route handling to Express
+app.get('/move', (req, res) => {
+    const fen = req.query.fen;
+    const depth = req.query.depth || 10;
 
-    if (req.url.startsWith('/move') && req.method === 'GET') {
-        const urlParams = new URLSearchParams(req.url.split('?')[1]);
-        const fen = urlParams.get('fen');
-        const depth = urlParams.get('depth') || 10;
+    console.log(`Received request: fen=${fen}, depth=${depth}`);
 
-        console.log(`Received request: fen=${fen}, depth=${depth}`);
+    const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
+    const stockfish = spawn(stockfishPath);
 
-        const stockfishPath = '/app/stockfish/stockfish-ubuntu-x86-64-bmi2';
-        const stockfish = spawn(stockfishPath);
+    // Timeout for hanging responses
+    const timeout = setTimeout(() => {
+        stockfish.kill();
+        res.status(504).json({ success: false, error: 'Request timed out' });
+    }, 25000); // 25-second timeout
 
-        // Timeout for hanging responses
-        const timeout = setTimeout(() => {
+    stockfish.stdin.write(`position fen ${fen}\n`);
+    stockfish.stdin.write(`go depth ${depth}\n`);
+
+    stockfish.stdout.on('data', (data) => {
+        const output = data.toString();
+        console.log(output);
+
+        if (output.includes('bestmove')) {
+            clearTimeout(timeout);
+            const bestMove = output.split('bestmove ')[1].split(' ')[0];
+            res.status(200).json({ success: true, bestmove: bestMove });
             stockfish.kill();
-            res.writeHead(504, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'Request timed out' }));
-        }, 25000); // 25-second timeout
+        }
+    });
 
-        stockfish.stdin.write(`position fen ${fen}\n`);
-        stockfish.stdin.write(`go depth ${depth}\n`);
+    stockfish.stderr.on('data', (data) => {
+        console.error(`Error: ${data}`);
+        clearTimeout(timeout);
+        res.status(500).json({ success: false, error: 'Internal Server Error' });
+    });
 
-        stockfish.stdout.on('data', (data) => {
-            const output = data.toString();
-            console.log(output);
-
-            if (output.includes('bestmove')) {
-                clearTimeout(timeout);
-                const bestMove = output.split('bestmove ')[1].split(' ')[0];
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, bestmove: bestMove }));
-                stockfish.kill();
-            }
-        });
-
-        stockfish.stderr.on('data', (data) => {
-            console.error(`Error: ${data}`);
-            clearTimeout(timeout);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'Internal Server Error' }));
-        });
-
-        stockfish.on('error', (err) => {
-            console.error(`Failed to start Stockfish: ${err}`);
-            clearTimeout(timeout);
-            res.writeHead(500, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: false, error: 'Failed to run Stockfish.' }));
-        });
-    } else {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        res.end('Not Found');
-    }
+    stockfish.on('error', (err) => {
+        console.error(`Failed to start Stockfish: ${err}`);
+        clearTimeout(timeout);
+        res.status(500).json({ success: false, error: 'Failed to run Stockfish.' });
+    });
 });
 
-server.listen(PORT, () => {
+// Handle undefined routes
+app.use((req, res) => {
+    res.status(404).send('Not Found');
+});
+
+// Start the server
+app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
