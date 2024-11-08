@@ -13,8 +13,9 @@ app.use(cors({
     allowedHeaders: ['Content-Type']
 }));
 
-// Stockfish binary path
-const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
+// Stockfish binary path (for Windows executable)
+const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';  // Update path for Windows
+// const stockfishPath = 'C:/Users/user/Documents/chess all working files/homepage real/stockfish/stockfish-windows-x86-64.exe';  // Update path for Windows
 
 // Check if Stockfish binary exists and is executable
 if (!fs.existsSync(stockfishPath)) {
@@ -28,8 +29,8 @@ app.get('/move', (req, res) => {
     const fen = req.query.fen;
     const depth = req.query.depth || 10;
 
-    // Make sure the Stockfish path is correctly set
-    const stockfish = spawn('/app/stockfish/stockfish-windows-x86-64.exe');
+    // Ensure the Stockfish path is correct for Windows executable
+    const stockfish = spawn(stockfishPath);
 
     stockfish.stdin.write(`position fen ${fen}\n`);
     stockfish.stdin.write(`go depth ${depth}\n`);
