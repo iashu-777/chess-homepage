@@ -1,5 +1,5 @@
 const express = require('express');
-const { spawn } = require('child_process');
+const { execFile } = require('child_process');
 const cors = require('cors');
 const fs = require('fs');  // To check file existence and permissions
 
@@ -14,13 +14,12 @@ app.use(cors({
 }));
 
 // Stockfish binary path (for Windows executable)
-const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';  // Update path for Windows
-// const stockfishPath = 'C:/Users/user/Documents/chess all working files/homepage real/stockfish/stockfish-windows-x86-64.exe';  // Update path for Windows
+const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
 
 // Check if Stockfish binary exists and is executable
 if (!fs.existsSync(stockfishPath)) {
     console.error(`Stockfish binary not found at ${stockfishPath}`);
-} else if (!fs.statSync(stockfishPath).mode & fs.constants.X_OK) {
+} else if (!(fs.statSync(stockfishPath).mode & fs.constants.X_OK)) {
     console.error(`Stockfish binary found but not executable: ${stockfishPath}`);
 }
 
@@ -29,29 +28,37 @@ app.get('/move', (req, res) => {
     const fen = req.query.fen;
     const depth = req.query.depth || 10;
 
-    // Ensure the Stockfish path is correct for Windows executable
-    const stockfish = spawn(stockfishPath);
+    // Use execFile to run Stockfish with the FEN and depth commands
+    const stockfishProcess = execFile(
+        stockfishPath,
+        [],
+        { shell: true },
+        (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Failed to start Stockfish: ${error.message}`);
+                return res.status(500).json({ success: false, error: 'Failed to run Stockfish.' });
+            }
+            if (stderr) {
+                console.error(`Stockfish error output: ${stderr}`);
+            }
 
-    stockfish.stdin.write(`position fen ${fen}\n`);
-    stockfish.stdin.write(`go depth ${depth}\n`);
-
-    stockfish.stdout.on('data', (data) => {
-        const output = data.toString();
-        if (output.includes('bestmove')) {
-            const bestMove = output.split('bestmove ')[1].split(' ')[0];
-            res.json({ success: true, bestmove: bestMove });
-            stockfish.kill();
+            // Process Stockfish output to find the best move
+            const output = stdout.toString();
+            if (output.includes('bestmove')) {
+                const bestMove = output.split('bestmove ')[1].split(' ')[0];
+                return res.json({ success: true, bestmove: bestMove });
+            } else {
+                return res.status(500).json({ success: false, error: 'Best move not found in Stockfish output.' });
+            }
         }
-    });
+    );
 
-    stockfish.stderr.on('data', (data) => {
-        console.error(`Error: ${data}`);
-    });
-
-    stockfish.on('error', (err) => {
-        console.error(`Failed to start Stockfish: ${err}`);
-        res.status(500).json({ success: false, error: 'Failed to run Stockfish.' });
-    });
+    // Send FEN and depth commands to Stockfish
+    if (stockfishProcess.stdin) {
+        stockfishProcess.stdin.write(`position fen ${fen}\n`);
+        stockfishProcess.stdin.write(`go depth ${depth}\n`);
+        stockfishProcess.stdin.end();
+    }
 });
 
 // Handle undefined routes
