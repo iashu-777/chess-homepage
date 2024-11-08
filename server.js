@@ -29,8 +29,7 @@ app.get('/move', (req, res) => {
     const depth = req.query.depth || 10;
 
     // Make sure the Stockfish path is correctly set
-    const stockfishPath = '/app/stockfish/stockfish-windows-x86-64.exe';
-    const stockfish = spawn(stockfishPath);
+    const stockfish = spawn('/app/stockfish/stockfish-windows-x86-64.exe');
 
     stockfish.stdin.write(`position fen ${fen}\n`);
     stockfish.stdin.write(`go depth ${depth}\n`);
