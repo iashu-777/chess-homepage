@@ -3,14 +3,14 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { spawn } = require("child_process");
 const fs = require("fs");
-var cors = require("cors");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
 
 // Configure CORS with middleware
 const corsOptions = {
-  origin: "https://prismatic-lamington-297b85.netlify.app",
+  origin: "http://localhost:3001",
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
 };
