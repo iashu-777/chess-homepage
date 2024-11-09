@@ -3,22 +3,18 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { spawn } = require("child_process");
 const fs = require("fs");
+const cors = require("cors");
 
 const app = express();
 const PORT = 3000;
 
-// Configure CORS for Express
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "https://prismatic-lamington-297b85.netlify.app");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  next();
-});
-
-// Handle preflight requests
-app.options("*", (req, res) => {
-  res.sendStatus(200);
-});
+// Configure CORS with middleware
+const corsOptions = {
+  origin: "https://prismatic-lamington-297b85.netlify.app",
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type"],
+};
+app.use(cors(corsOptions));
 
 // Stockfish binary path
 const stockfishPath = "/app/stockfish-ubuntu-x86-64-avx2";
@@ -78,8 +74,8 @@ const io = new Server(httpServer, {
   cors: {
     origin: "https://prismatic-lamington-297b85.netlify.app",
     methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type"]
-  }
+    allowedHeaders: ["Content-Type"],
+  },
 });
 
 let totalPlayers = 0;
