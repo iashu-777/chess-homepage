@@ -22,19 +22,22 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm install --only=production
 
+# Install PM2 globally for production use
+RUN npm install -g pm2
+
 # Copy the built frontend assets and backend files
 COPY --from=build-stage /app/dist /app/dist
 COPY --from=build-stage /app/socket.js /app/
-COPY --from=build-stage /app/server.js /app/
 
-# Copy the Stockfish binary for Windows
-
+# Copy the Stockfish binary and set executable permissions
 COPY --from=build-stage /app/stockfish-ubuntu-x86-64-avx2 /app/
-RUN chmod +x /app/stockfish-ubuntu-x86-64-avx2  # Ensure it is executable
+RUN chmod +x /app/stockfish-ubuntu-x86-64-avx2
 
+# Set environment variables if needed
+ENV NODE_ENV=production
 
 # Expose the application port
 EXPOSE 3000
 
-# Start the server without PM2
-CMD ["node", "server.js"]
+# Start the server with PM2, ensuring both socket.js and server.js run as one process
+CMD ["pm2-runtime", "start", "socket.js"]
