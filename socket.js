@@ -1,9 +1,8 @@
 const express = require("express");
-const { spawn } = require("child_process");
-const cors = require("cors");
-const fs = require("fs");
 const { createServer } = require("http");
 const { Server } = require("socket.io");
+const { spawn } = require("child_process");
+const fs = require("fs");
 
 const app = express();
 const PORT = 3000;
@@ -14,6 +13,11 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type");
   next();
+});
+
+// Handle preflight requests
+app.options("*", (req, res) => {
+  res.sendStatus(200);
 });
 
 // Stockfish binary path
