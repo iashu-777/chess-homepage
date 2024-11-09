@@ -11,7 +11,7 @@ const PORT = 3000;
 
 // Configure CORS with middleware
 const corsOptions = {
-  origin: "http://localhost:3001",
+  origin: "http://localhost:3000",
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
 };
