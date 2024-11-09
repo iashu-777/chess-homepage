@@ -4,8 +4,11 @@
   "description": "A multiplayer chess game built with Vue, Vite, Express, and Socket.io",
   "main": "socket.js",
   "dependencies": {
+    "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "express": "^4.21.1",
+    "fs": "^0.0.1-security",
+    "http": "^0.0.1-security",
     "socket.io": "^4.8.0",
     "stockfish": "^16.0.0",
     "vite": "^5.4.10",
@@ -18,7 +21,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-   "start": "pm2 start socket.js",
+    "start": "pm2 start socket.js",
     "serve": "vite preview",
     "stop": "pm2 stop socket",
     "restart": "pm2 restart socket"
