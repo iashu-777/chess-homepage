@@ -9,13 +9,12 @@ const app = express();
 const PORT = 3000;
 
 // Configure CORS for Express
-app.use(
-  cors({
-    origin: "*", // Update to allow specific origins if needed
-    methods: ["GET", "POST", "OPTIONS"],
-    allowedHeaders: ["Content-Type"],
-  })
-);
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "https://prismatic-lamington-297b85.netlify.app");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
 
 // Stockfish binary path
 const stockfishPath = "/app/stockfish-ubuntu-x86-64-avx2";
@@ -73,8 +72,9 @@ app.get("/move", (req, res) => {
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "*", // Allow any origin for testing; specify if needed
-    methods: ["GET", "POST"]
+    origin: "https://prismatic-lamington-297b85.netlify.app",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type"]
   }
 });
 
