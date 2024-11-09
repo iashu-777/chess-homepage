@@ -30,8 +30,8 @@ COPY --from=build-stage /app/dist /app/dist
 COPY --from=build-stage /app/socket.js /app/
 
 # Copy the Stockfish binary and set executable permissions
-COPY --from=build-stage /app/stockfish-ubuntu-x86-64-avx2 /app/stockfish-ubuntu-x86-64-avx2
-RUN chmod +x /app/stockfish-ubuntu-x86-64-avx2
+
+
 
 # Set environment variables if needed
 ENV NODE_ENV=production
