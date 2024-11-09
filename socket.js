@@ -3,7 +3,7 @@ const { createServer } = require("http");
 const { Server } = require("socket.io");
 const { spawn } = require("child_process");
 const fs = require("fs");
-const cors = require("cors");
+var cors = require("cors");
 
 const app = express();
 const PORT = 3000;
