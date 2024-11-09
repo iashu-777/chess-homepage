@@ -17,7 +17,7 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Stockfish binary path
-const stockfishPath = "./stockfish-ubuntu-x86-64-avx2";
+const stockfishPath = "/stockfish-ubuntu-x86-64-avx2";
 
 // Check if Stockfish binary exists and is executable
 if (!fs.existsSync(stockfishPath)) {
