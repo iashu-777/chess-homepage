@@ -17,63 +17,63 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// Stockfish binary path
-const stockfishPath = "stockfish-ubuntu-x86-64-avx2";
+// // Stockfish binary path
+// const stockfishPath = "stockfish-ubuntu-x86-64-avx2";
 
-// Check if Stockfish binary exists and is executable
-if (!fs.existsSync(stockfishPath)) {
-  console.error(`Stockfish binary not found at ${stockfishPath}`);
-} else if (!(fs.statSync(stockfishPath).mode & fs.constants.X_OK)) {
-  console.error(`Stockfish binary found but not executable: ${stockfishPath}`);
-}
+// // Check if Stockfish binary exists and is executable
+// if (!fs.existsSync(stockfishPath)) {
+//   console.error(`Stockfish binary not found at ${stockfishPath}`);
+// } else if (!(fs.statSync(stockfishPath).mode & fs.constants.X_OK)) {
+//   console.error(`Stockfish binary found but not executable: ${stockfishPath}`);
+// }
 
-// Set a request timeout (e.g., 30 seconds)
-app.use(timeout("30s"));
+// // Set a request timeout (e.g., 30 seconds)
+// app.use(timeout("30s"));
 
-// Stockfish AI Move Endpoint
-app.get("/move", (req, res) => {
-  // Check if the request timed out
-  if (!req.timedout) {
-    const fen = req.query.fen;
-    const depth = req.query.depth || 10;
+// // Stockfish AI Move Endpoint
+// app.get("/move", (req, res) => {
+//   // Check if the request timed out
+//   if (!req.timedout) {
+//     const fen = req.query.fen;
+//     const depth = req.query.depth || 10;
 
-    // Run Stockfish with FEN and depth commands using spawn
-    const stockfish = spawn(stockfishPath);
+//     // Run Stockfish with FEN and depth commands using spawn
+//     const stockfish = spawn(stockfishPath);
 
-    let output = "";
+//     let output = "";
 
-    // Collect data from Stockfish output
-    stockfish.stdout.on("data", (data) => {
-      output += data.toString();
-    });
+//     // Collect data from Stockfish output
+//     stockfish.stdout.on("data", (data) => {
+//       output += data.toString();
+//     });
 
-    // Handle error output from Stockfish
-    stockfish.stderr.on("data", (data) => {
-      console.error(`Stockfish error output: ${data}`);
-    });
+//     // Handle error output from Stockfish
+//     stockfish.stderr.on("data", (data) => {
+//       console.error(`Stockfish error output: ${data}`);
+//     });
 
-    // Detect when Stockfish process ends
-    stockfish.on("close", (code) => {
-      if (code !== 0) {
-        console.error(`Stockfish process exited with code ${code}`);
-        return res.status(500).json({ success: false, error: "Stockfish process failed." });
-      }
+//     // Detect when Stockfish process ends
+//     stockfish.on("close", (code) => {
+//       if (code !== 0) {
+//         console.error(`Stockfish process exited with code ${code}`);
+//         return res.status(500).json({ success: false, error: "Stockfish process failed." });
+//       }
 
-      // Process Stockfish output to find the best move
-      if (output.includes("bestmove")) {
-        const bestMove = output.split("bestmove ")[1].split(" ")[0];
-        return res.json({ success: true, bestmove: bestMove });
-      } else {
-        return res.status(500).json({ success: false, error: "Best move not found in Stockfish output." });
-      }
-    });
+//       // Process Stockfish output to find the best move
+//       if (output.includes("bestmove")) {
+//         const bestMove = output.split("bestmove ")[1].split(" ")[0];
+//         return res.json({ success: true, bestmove: bestMove });
+//       } else {
+//         return res.status(500).json({ success: false, error: "Best move not found in Stockfish output." });
+//       }
+//     });
 
-    // Send FEN and depth commands to Stockfish
-    stockfish.stdin.write(`position fen ${fen}\n`);
-    stockfish.stdin.write(`go depth ${depth}\n`);
-    stockfish.stdin.end();
-  }
-});
+//     // Send FEN and depth commands to Stockfish
+//     stockfish.stdin.write(`position fen ${fen}\n`);
+//     stockfish.stdin.write(`go depth ${depth}\n`);
+//     stockfish.stdin.end();
+//   }
+// });
 
 // Socket.IO for Multiplayer Functionality
 const httpServer = createServer(app);
