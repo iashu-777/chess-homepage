@@ -154,6 +154,9 @@ document.addEventListener('DOMContentLoaded', function () {
 // const socket = io('http://localhost:3000');
 const socket = io('https://chess-homepage-production.up.railway.app');
 
+socket.on('connect_error', (err) => {
+  console.error('Connection Error:', err.message);
+});
 
 
 socket.on('total_players_count_change', function (totalPlayersCount) {
