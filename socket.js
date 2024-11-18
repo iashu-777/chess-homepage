@@ -11,7 +11,7 @@ const PORT = 3000;
 
 // Configure CORS with middleware
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: ["http://127.0.0.1:3000", "https://prismatic-lamington-297b85.netlify.app"],
   methods: ["GET", "POST"],
   allowedHeaders: ["Content-Type"],
 };
@@ -22,7 +22,7 @@ app.use(cors(corsOptions));
 const httpServer = createServer(app);
 const io = new Server(httpServer, {
   cors: {
-    origin: "https://prismatic-lamington-297b85.netlify.app",
+    origin: ["http://127.0.0.1:3000", "https://prismatic-lamington-297b85.netlify.app"],
     methods: ["GET", "POST"],
     allowedHeaders: ["Content-Type"],
   },
