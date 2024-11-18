@@ -151,8 +151,6 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 });
 
-// const socket = io('http://localhost:3000');
-// const socket = io('https://chess-homepage-production.up.railway.app');
 const socket = io(
   location.hostname === "127.0.0.1" 
     ? "http://127.0.0.1:3000" 
