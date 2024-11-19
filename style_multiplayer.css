@@ -1,37 +1,126 @@
-body{
-    background: black;
+/* General Body Styles */
+body {
+    background: url('https://4kwallpapers.com/images/walls/thumbs_3t/965.jpg') no-repeat center center/cover;
+    background-size: cover;
     color: white;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif
-}
-.display-none{
-    display: none;
-}
-#youArePlayingAs{
-    font-size: 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     margin: 0;
-}
-#timerDisplay{
-    margin: 0;
-    margin-top: 0;
-    font-size: 40px;
-}
-#waiting_text_p{
-    width: 90vw;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 30vh;
-
-    text-align: center;
-    font-size: 40px;
-    
-}
-.display-f{
+    padding: 0;
     display: flex;
-    margin-top: 20px;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Sidebar Styles */
+#sidebar {
+    width: 250px;
+    height: 100%;
+    background-color: #2f2f2f;
+    position: fixed;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 30px;
+    padding-left: 20px;
+    z-index: 10;
+}
+
+#logo {
+    width: 150px;
+    margin-bottom: 30px;
+}
+
+/* Sidebar Menu Items */
+#side_menu {
+    list-style: none;
+    padding-left: 0;
+}
+
+.menu {
+    font-size: 1.5rem;
+    padding: 15px 20px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    text-decoration: none;
+    color: white;
+}
+
+.menu:hover {
+    background-color: #444;
+    transform: scale(1.05);
+}
+
+.submenu li a {
+    padding-left: 30px;
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+}
+
+.submenu li a:hover {
+    background-color: #555;
+}
+
+#side_menu li {
+    margin-bottom: 20px;
+}
+
+/* Main Content Styles */
+.main-content {
+    margin-left: 270px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Chessboard Styles */
+#myBoard {
+    margin-top: 40px;
+    width: 450px;
+    height: 450px;
+    border: 4px solid #dcdcdc;
+}
+
+/* Timer Button Styles */
+.timer-button {
+    border: none;
+    border-radius: 4px;
+    font-size: 30px;
+    background-color: white;
+    color: black;
+    padding: 10px 20px;
+    margin: 5px;
+    width: 120px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.timer-button:hover {
+    background-color: #333;
+    color: white;
+    transform: scale(1.05);
+}
+
+.timer-button:focus {
+    outline: none;
+}
+
+/* Flexbox for Layout */
+.display-f {
+    display: flex;
+    gap: 80px;
     align-items: center;
     justify-content: center;
-    gap: 80px;
 }
+
+.flex-col {
+    flex-direction: column;
+}
+
 #total_players {
     position: absolute;
     right: 30px;
@@ -39,20 +128,76 @@ body{
     font-weight: 700;
     font-size: 18px;
 }
-.timer-button{
-    border: none;
-    border-radius: 4px;
-    font-size: 30px;
-    background-color: white;
-    color: black;
-    padding: 4px 10px;
+
+/* Waiting for Player Styles */
+#waiting_text_p {
+    width: 90vw;
+    margin-left: auto;
+    margin-right: auto;
+    margin-top: 30vh;
+    text-align: center;
+    font-size: 40px;
+    opacity: 0;
+    transform: translateY(-50px);
+    animation: fadeInUp 1s forwards;
 }
 
-.flex-col{
-    flex-direction: column;
+.display-none {
+    display: none;
 }
-.timer-button:hover{
-    background: gray;
-    color: white;
-    cursor: pointer;
+
+/* Animations */
+@keyframes fadeInUp {
+    0% {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideIn {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(0);
+    }
+}
+
+#youArePlayingAs {
+    animation: slideIn 1s ease-out;
+    font-size: 1.5rem;
+    margin-top: 20px;
+}
+
+/* Timer Styles */
+#timerDisplay {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffdf00;
+    animation: countdown 1s linear infinite;
+}
+
+@keyframes countdown {
+    0% {
+        color: #ffdf00;
+    }
+    50% {
+        color: #ff0000;
+    }
+    100% {
+        color: #ffdf00;
+    }
+}
+
+/* Heading Styles */
+h1 {
+    color: #ffdf00;
+    font-size: 3rem;
+    text-align: center;
+    margin-top: 20px;
+    animation: fadeInUp 2s ease-in-out;
 }
