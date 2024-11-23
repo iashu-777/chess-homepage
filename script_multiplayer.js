@@ -8,7 +8,12 @@ var $status = $('#status')
 var $fen = $('#fen')
 var $pgn = $('#pgn')
 let c_player = null;
-let currentMatchTime=null;
+let currentMatchTime = null;
+let timerInstance = null;
+let opponentDisconnected = false;
+let reconnectWaitTime = 15; // Wait time in seconds before declaring a win
+let reconnectTimer = null;
+
 
 function startTimer(seconds, container, oncomplete) {
   let startTime, timer, obj, ms = seconds * 1000,
@@ -40,7 +45,6 @@ function startTimer(seconds, container, oncomplete) {
 }
 
 function onDragStart(source, piece, position, orientation) {
-
   if (game.turn() != c_player) {
     return false;
   }
@@ -66,11 +70,10 @@ function onDrop(source, target) {
   // illegal move
   if (move === null) return 'snapback';
   socket.emit('sync_state', game.fen(), game.turn());
-  if(timerInstance){
+  if (timerInstance) {
     timerInstance.pause();
-  }
-  else{
-    timerInstance= startTimer(Number(currentMatchTime) * 60, "timerDisplay", function () { alert("Done!"); });
+  } else {
+    timerInstance = startTimer(Number(currentMatchTime) * 60, "timerDisplay", function () { alert("Done!"); });
   }
   updateStatus()
 }
@@ -141,7 +144,6 @@ function handleButtonClick(event) {
   $('#main-element').hide();
   $('#waiting_text_p').show();
 }
-let timerInstance=null;
 
 document.addEventListener('DOMContentLoaded', function () {
   const buttons = document.getElementsByClassName('timer-button');
@@ -163,31 +165,23 @@ socket.on('total_players_count_change', function (totalPlayersCount) {
   $('#total_players').html('Total Players: ' + totalPlayersCount)
 })
 
-socket.on("match_made", (color,time) => {
-  // alert("You are playing as " + color)
+socket.on("match_made", (color, time) => {
   c_player = color;
-
-
-
   $('#main-element').show();
   $('#waiting_text_p').hide();
   const currentPlayer = color === 'b' ? 'Black' : 'White';
   $('#buttonsParent').html("<p id='youArePlayingAs'>You are Playing as " + currentPlayer + "</p><p id='timerDisplay'></p>");
-
   $('#buttonsParent').addClass('flex-col'); 
   game.reset();
   board.clear();
   board.start();
   board.orientation(currentPlayer.toLowerCase());
-
-  currentMatchTime=time;
-  if(game.turn()===c_player){
-    timerInstance= startTimer(Number(time) * 60, "timerDisplay", function () { alert("Done!"); });
-
-  }
-  else{
-    timerInstance=null;
-    $('#timerDisplay').html(currentMatchTime+":00");
+  currentMatchTime = time;
+  if (game.turn() === c_player) {
+    timerInstance = startTimer(Number(time) * 60, "timerDisplay", function () { alert("Done!"); });
+  } else {
+    timerInstance = null;
+    $('#timerDisplay').html(currentMatchTime + ":00");
   }
 });
 
@@ -195,16 +189,101 @@ socket.on('sync_state_from_server', function (fen, turn) {
   game.load(fen);
   game.setTurn(turn);
   board.position(fen);
-
-  if(timerInstance){
+  
+  if (timerInstance) {
     timerInstance.resume();
-  }
-  else{
-    timerInstance= startTimer(Number(currentMatchTime) * 60, "timerDisplay", function () { alert("Done!"); });
+  } else {
+    timerInstance = startTimer(Number(currentMatchTime) * 60, "timerDisplay", function () { alert("Done!"); });
   }
 })
 
 socket.on('game_over_from_server', function (winner) {
-  alert(winner + "won the match");
+  alert(winner + " won the match");
   // window.location.reload();
 })
+
+// Handle disconnection
+
+
+// Handle opponent disconnection
+socket.on('disconnect', function () {
+  console.log(`Player ${socket.id} disconnected.`);
+  let opponentId = null;
+
+  // Find the opponent in the match
+  const foreachLoop = [10, 15, 20];
+  foreachLoop.forEach(time => {
+    matches[time].forEach((match, index) => {
+      if (match[socket.id]) {
+        opponentId = match[socket.id];
+        matches[time].splice(index, 1); // Remove match from the list
+        console.log(`Match removed for player ${socket.id} and opponent ${opponentId} in ${time} min category.`);
+      }
+    });
+  });
+
+  if (opponentId) {
+    // Notify the opponent and start a delay for reconnection
+    if (players[opponentId]) {
+      players[opponentId].emit('player_disconnected');
+    }
+
+    // Start the reconnection timeout
+    reconnectionTimeouts[socket.id] = setTimeout(() => {
+      console.log(`Player ${socket.id} did not reconnect. Opponent ${opponentId} declared as the winner.`);
+      if (players[opponentId]) {
+        players[opponentId].emit('game_over_from_server', 'You');
+      }
+    }, 15000); // 15 seconds delay
+  }
+
+  // Cleanup player from lists
+  FireonDisConnect(socket);
+});
+
+
+
+// Handle opponent disconnection
+// Handle opponent disconnection
+socket.on('player_disconnected', function () {
+  if (!opponentDisconnected) {
+    opponentDisconnected = true;
+
+    // Pause the active player's timer
+    if (timerInstance) {
+      timerInstance.pause();
+    }
+
+    // Notify the player about the opponent's disconnection
+    let waitTime = reconnectWaitTime;
+    $('#timerDisplay').html(`Opponent disconnected! Waiting for ${waitTime}s to reconnect...`);
+    reconnectTimer = setInterval(() => {
+      if (waitTime > 0) {
+        waitTime--;
+        $('#timerDisplay').html(`Opponent disconnected! Waiting for ${waitTime}s to reconnect...`);
+      } else {
+        clearInterval(reconnectTimer);
+        alert("Your opponent did not reconnect in time. You won!");
+        window.location.href = 'index_multiplayer.html';
+      }
+    }, 1000);
+  }
+});
+
+// Handle opponent reconnection
+socket.on('opponent_reconnected', function () {
+  if (opponentDisconnected) {
+    opponentDisconnected = false;
+
+    // Resume the game and the timer
+    alert("Your opponent has reconnected! The game will continue.");
+    if (timerInstance) {
+      timerInstance.resume();
+    }
+
+    // Clear the reconnect wait message
+    $('#timerDisplay').html(currentMatchTime + ":00");
+    clearInterval(reconnectTimer);
+    reconnectTimer = null;
+  }
+});
