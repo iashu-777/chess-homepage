@@ -1,24 +1,152 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const path = require('path');
 const User = require('../models/user'); // Import the User model
+
+// Middleware to parse JSON request bodies
+router.use(express.json());
+
+// Configure multer for file uploads
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/');
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Set filename with timestamp to avoid collisions
+    }
+});
+
+const upload = multer({ storage: storage });
 
 // POST request for signing up a new user
 router.post('/signup', async (req, res) => {
     try {
         const { username, email, password } = req.body;
 
-        // Create a new user (password will be hashed automatically by the pre-save hook)
-        const newUser = new User({ username, email, password });
+        // Ensure username and email are unique
+        const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+        if (existingUser) {
+            return res.status(400).json({ error: 'Username or email already exists' });
+        }
+
+        // Hash the password before saving it
         
+
+        // Create a new user
+        const newUser = new User({ username, email, password: password });
+
         // Save the new user to the database
         await newUser.save();
 
-        // Send success response
-        res.status(201).json({ message: 'User signed up successfully!' });
+        // Generate JWT token
+        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // Send success response with token
+        res.status(201).json({ message: 'User signed up successfully!', token });
     } catch (error) {
         console.error('Error in signup route:', error);
         res.status(500).json({ error: 'Something went wrong!' });
     }
+});
+
+// POST request for logging in a user
+router.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+
+    try {
+        // Find the user by username
+        const user = await User.findOne({ username });
+        
+
+        if (!user) {
+            console.log("hi")
+            return res.status(400).json({ error: 'Invalid username or password' });
+        }
+
+        // Debugging: Log the user object and the password entered
+        console.log("User from DB:", user);
+        console.log("Entered Password:", password);
+
+        // Compare the provided password (plain text) with the stored hashed password
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        // Debugging: Log the result of the password comparison
+        console.log("Password match result:", isMatch);
+
+        if (!isMatch) {
+            return res.status(400).json({ error: 'Invalid username or password' });
+        }
+
+        // Generate JWT token
+        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+        // Send success response with token
+        res.json({ message: 'Login successful!', token });
+    } catch (error) {
+        console.error('Error in login route:', error);
+        res.status(500).json({ error: 'Something went wrong!' });
+    }
+});
+
+// Middleware to authenticate the user by verifying the JWT token
+const authenticate = (req, res, next) => {
+    const token = req.headers['authorization']?.split(' ')[1]; // Extract token from the Authorization header
+    if (!token) {
+        return res.status(401).json({ error: 'No token provided, authorization denied' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded; // Add user info to request object
+        next(); // Proceed to the next middleware/route handler
+    } catch (error) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+};
+
+// GET request to fetch the current user's profile
+router.get('/profile', authenticate, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password'); // Exclude password from response
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+        res.json({ user });
+    } catch (error) {
+        console.error('Error fetching profile:', error);
+        res.status(500).json({ error: 'Something went wrong!' });
+    }
+});
+
+// POST request to update the user's profile (username, email, profile picture)
+router.post('/updateProfile', authenticate, upload.single('profilePicture'), async (req, res) => {
+    try {
+        const { username, email } = req.body;
+        const updateData = { username, email };
+
+        if (req.file) {
+            updateData.profilePicture = `/uploads/${req.file.filename}`; // Save the file path to the database
+        }
+
+        // Update user profile
+        const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        res.json({ message: 'Profile updated successfully', user });
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        res.status(500).json({ error: 'Something went wrong!' });
+    }
+});
+
+// POST request to log out the user
+router.post('/logout', (req, res) => {
+    res.json({ message: 'Successfully logged out' });
 });
 
 module.exports = router;

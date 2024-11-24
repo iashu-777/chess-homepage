@@ -5,9 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Arena</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" 
+            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" 
+            crossorigin="anonymous"></script>
     <link rel="stylesheet" href="./lib/chessboardjs/css/chessboard-1.0.0.min.css">
     <script src="/lib/chess.js"></script>
+    <style>
+        /* Add some CSS for styling */
+        .hidden {
+            display: none;
+        }
+        .profile-img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: #ccc;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -15,27 +29,21 @@
             <nav>
                 <ul>
                     <li><a href="#home"><img src="image/chess_logo.png" alt="Chess Arena Logo" class="logo"></a></li>
-                    <li class="dropdown">
-                        <a href="#stats">Stats</a>
-                        <ul class="submenu">
-                            <li>1</li>
-                            <li>2</li>
-                            <li>3</li>
-                        </ul>
-                    </li>
-                    <li><a href="#awards">Awards</a></li>
-                    <li><a href="profile.html">Profile</a></li>
-                    <li><a href="#leaderboard">Leaderboard</a></li>
+                    <li class="dropdown hidden" id="stats"><a href="#stats">Stats</a></li>
+                    <li class="hidden" id="awards"><a href="#awards">Awards</a></li>
+                    <li class="hidden" id="profileLink"><a href="profile.html">Profile</a></li>
+                    <li class="hidden" id="leaderboard"><a href="#leaderboard">Leaderboard</a></li>
                     <li class="spacer"></li>
-                    <li><a href="login.html" class="btn">Login</a></li>
-                    <li><a href="signup.html" class="btn">Sign Up</a></li>
+                    <li id="loginSection"><a href="login.html" class="btn" id="loginBtn">Login</a></li>
+                    <li id="signupSection"><a href="signup.html" class="btn" id="signupBtn">Sign Up</a></li>
+                    <li class="hidden" id="logoutSection"><button id="logoutBtn" class="btn">Logout</button></li>
                 </ul>
             </nav>
         </aside>
 
         <main>
             <div id="myBoard" class="chessboard-container"></div>
-            
+
             <div class="right-section">
                 <h2>Play, Chess Arena where Every Move Matters</h2>
                 <button onclick="playOnline()">
@@ -50,11 +58,68 @@
                         <div>Refine Your Game with Smart Training Bots!</div>
                     </center>
                 </button>
+
+                <!-- Profile Section -->
+                <div id="userProfile" class="hidden">
+                    <img id="userAvatar" class="profile-img" src="image/default-avatar.png" alt="User Avatar">
+                    <div id="userName">Welcome, User</div>
+                </div>
             </div>
         </main>
     </div>
-    
+
     <script src="./lib/chessboardjs/js/chessboard-1.0.0.min.js"></script>
     <script src="script_home.js"></script>
+    <script>
+        // Check if user is logged in (i.e., token exists in localStorage)
+        $(document).ready(function() {
+            const token = localStorage.getItem('token');
+
+            if (token) {
+                // User is logged in
+                $('#loginSection').hide();
+                $('#signupSection').hide();
+                $('#stats').removeClass('hidden');
+                $('#awards').removeClass('hidden');
+                $('#profileLink').removeClass('hidden');
+                $('#leaderboard').removeClass('hidden');
+                $('#logoutSection').removeClass('hidden');
+                $('#userProfile').removeClass('hidden');
+
+                // Determine the backend URL based on the environment
+const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+    ? 'http://localhost:3001/auth/profile'  // Local development
+    : 'https://chess-homepage-production.up.railway.app/auth/profile';  // Production URL
+
+                // Fetch user profile info
+                $.ajax({
+                    url: apiUrl,
+                    method: 'GET',
+                    headers: { Authorization: `Bearer ${token}` },
+                    success: function(response) {
+                        $('#userName').text(`Welcome, ${response.user.username}`);
+                        if (response.user.profilePicture) {
+                            $('#userAvatar').attr('src', response.user.profilePicture);
+                        }
+                    },
+                    error: function(error) {
+                        console.error('Error fetching profile:', error);
+                    }
+                });
+            } else {
+                // User not logged in
+                $('#userProfile').hide();
+                $('#logoutSection').hide();
+            }
+        });
+
+        // Logout functionality
+        $('#logoutBtn').on('click', function() {
+            localStorage.removeItem('token'); // Remove token from storage
+            alert('You have been logged out!');
+            window.location.reload(); // Reload the page to reset UI
+        });
+    </script>
+    
 </body>
 </html>

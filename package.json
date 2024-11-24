@@ -4,7 +4,6 @@
   "description": "A multiplayer chess game built with Vue, Vite, Express, and Socket.io",
   "main": "socket.js",
   "dependencies": {
-    "arduino": "^0.2.3",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.3",
@@ -17,6 +16,7 @@
     "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.2",
+    "multer": "^1.4.5-lts.1",
     "socket.io": "^4.8.1",
     "socket.io-client": "^4.8.1",
     "stockfish": "^16.0.0",
@@ -31,10 +31,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "pm2 start socket.js",
+    "start": "pm2 start server.js && pm2 start socket.js",
     "serve": "vite preview",
-    "stop": "pm2 stop socket",
-    "restart": "pm2 restart socket"
+    "stop": "pm2 stop all",
+    "restart": "pm2 restart all"
   },
   "engines": {
     "node": ">=14.x"
@@ -47,6 +47,6 @@
     "socket.io",
     "express"
   ],
-  "author": "Your Name",
+  "author": "Ashish",
   "license": "MIT"
 }

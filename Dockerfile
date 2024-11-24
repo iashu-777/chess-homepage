@@ -28,6 +28,7 @@ RUN npm install -g pm2
 # Copy the built frontend assets and backend files
 COPY --from=build-stage /app/dist /app/dist
 COPY --from=build-stage /app/socket.js /app/
+COPY --from=build-stage /app/server.js /app/
 
 # Copy the Stockfish binary and set executable permissions
 
@@ -39,5 +40,5 @@ ENV NODE_ENV=production
 # Expose the application port
 EXPOSE 3000
 
-# Start the server with PM2, ensuring both socket.js and server.js run as one process
-CMD ["pm2-runtime", "start", "socket.js"]
+CMD ["pm2-runtime", "start", "server.js", "--name", "server", "&&", "pm2-runtime", "start", "socket.js", "--name", "socket"]
+
