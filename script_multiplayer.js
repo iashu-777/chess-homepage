@@ -205,41 +205,6 @@ socket.on('game_over_from_server', function (winner) {
 // Handle disconnection
 
 
-// Handle opponent disconnection
-socket.on('disconnect', function () {
-  console.log(`Player ${socket.id} disconnected.`);
-  let opponentId = null;
-
-  // Find the opponent in the match
-  const foreachLoop = [10, 15, 20];
-  foreachLoop.forEach(time => {
-    matches[time].forEach((match, index) => {
-      if (match[socket.id]) {
-        opponentId = match[socket.id];
-        matches[time].splice(index, 1); // Remove match from the list
-        console.log(`Match removed for player ${socket.id} and opponent ${opponentId} in ${time} min category.`);
-      }
-    });
-  });
-
-  if (opponentId) {
-    // Notify the opponent and start a delay for reconnection
-    if (players[opponentId]) {
-      players[opponentId].emit('player_disconnected');
-    }
-
-    // Start the reconnection timeout
-    reconnectionTimeouts[socket.id] = setTimeout(() => {
-      console.log(`Player ${socket.id} did not reconnect. Opponent ${opponentId} declared as the winner.`);
-      if (players[opponentId]) {
-        players[opponentId].emit('game_over_from_server', 'You');
-      }
-    }, 15000); // 15 seconds delay
-  }
-
-  // Cleanup player from lists
-  FireonDisConnect(socket);
-});
 
 
 
