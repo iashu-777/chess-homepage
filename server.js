@@ -10,8 +10,8 @@ const app = express();
 const allowedOrigin = 'https://prismatic-lamington-297b85.netlify.app';
 
 app.use(cors({
-    origin: allowedOrigin,  // Allow requests only from this origin
-    methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allow specific methods
+    origin: "*",
+    methods: ["*"],
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
 }));
 app.use(express.json()); // Parse JSON payloads
