@@ -152,6 +152,12 @@ document.addEventListener('DOMContentLoaded', function () {
     button.addEventListener('click', handleButtonClick)
   }
 });
+document.addEventListener("DOMContentLoaded", function () {
+  const matchId = localStorage.getItem("matchId");
+  if (matchId) {
+      socket.emit("reconnect_with_match", matchId);
+  }
+});
 
 // const socket = io('http://localhost:3000');
 // const socket = io('https://chess-homepage-production.up.railway.app');
@@ -165,25 +171,30 @@ socket.on('total_players_count_change', function (totalPlayersCount) {
   $('#total_players').html('Total Players: ' + totalPlayersCount)
 })
 
-socket.on("match_made", (color, time) => {
+socket.on("match_made", (color, time, matchId) => {
+  localStorage.setItem("matchId", matchId); // Store match ID locally
   c_player = color;
   $('#main-element').show();
   $('#waiting_text_p').hide();
+
   const currentPlayer = color === 'b' ? 'Black' : 'White';
-  $('#buttonsParent').html("<p id='youArePlayingAs'>You are Playing as " + currentPlayer + "</p><p id='timerDisplay'></p>");
-  $('#buttonsParent').addClass('flex-col'); 
+  $('#buttonsParent').html(`<p id="youArePlayingAs">You are Playing as ${currentPlayer}</p><p id="timerDisplay"></p>`);
+  $('#buttonsParent').addClass('flex-col');
+
   game.reset();
   board.clear();
   board.start();
   board.orientation(currentPlayer.toLowerCase());
   currentMatchTime = time;
+
   if (game.turn() === c_player) {
     timerInstance = startTimer(Number(time) * 60, "timerDisplay", function () { alert("Done!"); });
   } else {
     timerInstance = null;
-    $('#timerDisplay').html(currentMatchTime + ":00");
+    $('#timerDisplay').html(`${currentMatchTime}:00`);
   }
 });
+
 
 socket.on('sync_state_from_server', function (fen, turn) {
   game.load(fen);
@@ -251,4 +262,16 @@ socket.on('opponent_reconnected', function () {
     clearInterval(reconnectTimer);
     reconnectTimer = null;
   }
+});
+
+socket.on("restore_game_state", function (fen, turn, matchId) {
+  game.load(fen);
+  board.position(fen);
+  board.orientation(turn === "w" ? "white" : "black");
+});
+
+socket.on("invalid_match", function () {
+  alert("Failed to reconnect. Starting a new game.");
+  localStorage.removeItem("matchId");
+  window.location.href = "index.html";
 });

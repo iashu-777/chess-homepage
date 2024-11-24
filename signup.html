@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sign Up - Chess Arena</title>
@@ -10,7 +11,7 @@
     <div class="signup-container">
         <div class="form-container">
             <h2>Create an Account</h2>
-            <form action="#">
+            <form id="signupForm">
                 <div class="input-group">
                     <label for="username">Username</label>
                     <input type="text" id="username" name="username" placeholder="Enter your username" required>
@@ -23,9 +24,17 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="Enter your password" required>
                 </div>
-                <button type="submit" class="btn">Sign Up</button>
+                <button id="signupButton" type="submit" class="btn">Sign Up</button>
             </form>
+            <!-- Success and Error messages -->
+            <div id="successMessage" style="display:none; color: green; text-align: center;">
+                Signup successful! You will be redirected shortly...
+            </div>
+            <div id="errorMessage" style="display:none; color: red; text-align: center;">
+                Signup failed. Please try again.
+            </div>
         </div>
     </div>
 </body>
+<script src="signup.js"></script>
 </html>

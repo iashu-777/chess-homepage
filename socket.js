@@ -24,6 +24,7 @@ let matches = {
   '20': [],
 };
 let reconnectionTimeouts = {}; // Store reconnection timeout IDs for each player
+let gameStates = {}; // Temporary in-memory store
 
 function removeSocketFromWaitingPeriod(socket) {
   const foreachLoop = [10, 15, 20];
@@ -53,26 +54,49 @@ function FireonDisConnect(socket) {
 }
 
 
-function initialsetupMatch(opponentId, socketId, time) {
-  // Ensure both players are properly added to the 'players' object before emitting
-  if (players[opponentId] && players[socketId]) {
-    players[opponentId].emit("match_made", "w", time);
-    players[socketId].emit("match_made", "b", time);
 
-    players[opponentId].on('sync_state', function (fen, turn) {
-      players[socketId].emit('sync_state_from_server', fen, turn);
+function initialsetupMatch(opponentId, socketId, time) {
+  if (players[opponentId] && players[socketId]) {
+    const matchId = `${opponentId}-${socketId}`; // Generate unique match ID
+    gameStates[matchId] = {
+      fen: "start",      // Initial chess position
+      turn: "w",         // White moves first
+      timer: time * 60,  // Convert time to seconds
+      players: {
+        [opponentId]: "w",
+        [socketId]: "b"
+      }
+    };
+
+    // Notify players of match creation
+    players[opponentId].emit("match_made", "w", time, matchId);
+    players[socketId].emit("match_made", "b", time, matchId);
+
+    // Synchronize game states between players
+    players[opponentId].on("sync_state", function (fen, turn) {
+      gameStates[matchId].fen = fen;
+      gameStates[matchId].turn = turn;
+      players[socketId].emit("sync_state_from_server", fen, turn);
     });
-    players[socketId].on('sync_state', function (fen, turn) {
-      players[opponentId].emit('sync_state_from_server', fen, turn);
+
+    players[socketId].on("sync_state", function (fen, turn) {
+      gameStates[matchId].fen = fen;
+      gameStates[matchId].turn = turn;
+      players[opponentId].emit("sync_state_from_server", fen, turn);
     });
-    players[opponentId].on('game_over', function (winner) {
-      players[socketId].emit('game_over_from_server', winner);
+
+    // Handle game over scenarios
+    players[opponentId].on("game_over", function (winner) {
+      delete gameStates[matchId];
+      players[socketId].emit("game_over_from_server", winner);
     });
-    players[socketId].on('game_over', function (winner) {
-      players[opponentId].emit('game_over_from_server', winner);
+
+    players[socketId].on("game_over", function (winner) {
+      delete gameStates[matchId];
+      players[opponentId].emit("game_over_from_server", winner);
     });
   } else {
-    console.log('Error: Could not find one or both players.');
+    console.error("Error: Could not find one or both players.");
   }
 }
 
@@ -99,40 +123,45 @@ io.on("connection", function (socket) {
     HandlePlayRequest(socket, time);
   });
 
-  socket.on('disconnect', function () {
+  socket.on("disconnect", function () {
     console.log(`Player ${socket.id} disconnected.`);
+  
+    let matchId = null;
     let opponentId = null;
   
-    // Find the opponent in the match
-    const foreachLoop = [10, 15, 20];
-    foreachLoop.forEach(time => {
-      matches[time].forEach((match, index) => {
-        if (match[socket.id]) {
-          opponentId = match[socket.id];
-          matches[time].splice(index, 1); // Remove match from the list
-          console.log(`Match removed for player ${socket.id} and opponent ${opponentId} in ${time} min category.`);
-        }
-      });
-    });
-  
-    if (opponentId) {
-      // Notify the opponent and start a delay for reconnection
-      if (players[opponentId]) {
-        players[opponentId].emit('player_disconnected');
+    // Find match by disconnected player
+    for (const id in gameStates) {
+      if (gameStates[id].players[socket.id]) {
+        matchId = id;
+        opponentId = Object.keys(gameStates[id].players).find((id) => id !== socket.id);
+        break;
       }
-  
-      // Start the reconnection timeout
-      reconnectionTimeouts[socket.id] = setTimeout(() => {
-        console.log(`Player ${socket.id} did not reconnect. Opponent ${opponentId} declared as the winner.`);
-        if (players[opponentId]) {
-          players[opponentId].emit('game_over_from_server', 'You');
-        }
-      }, 15000); // 15 seconds delay
     }
   
-    // Cleanup player from lists
+    if (matchId && opponentId) {
+      // Mark player as disconnected in game state
+      gameStates[matchId].disconnectedPlayer = socket.id;
+  
+      // Notify the opponent
+      if (players[opponentId]) {
+        players[opponentId].emit("player_disconnected", matchId);
+      }
+  
+      // Start a timeout for reconnection
+      reconnectionTimeouts[socket.id] = setTimeout(() => {
+        console.log(`Player ${socket.id} did not reconnect. Declaring opponent (${opponentId}) as winner.`);
+        if (players[opponentId]) {
+          players[opponentId].emit("game_over_from_server", "You");
+        }
+        delete gameStates[matchId]; // Cleanup game state
+      }, 15000); // 15 seconds
+    } else {
+      console.error("No match found for disconnected player.");
+    }
+  
     FireonDisConnect(socket);
   });
+  
   
   // Handle player reconnection
   socket.on('reconnect', function () {
