@@ -20,7 +20,8 @@ WORKDIR /app
 
 # Copy package files and install only production dependencies
 COPY package.json package-lock.json ./
-COPY ./routes /app/routes
+
+
 
 RUN npm install --only=production
 
@@ -28,6 +29,8 @@ RUN npm install --only=production
 RUN npm install -g pm2
 
 # Copy the built frontend assets and backend files
+COPY ./routes /app/routes
+COPY ./models /app/models
 COPY --from=build-stage /app/dist /app/dist
 COPY --from=build-stage /app/socket.js /app/
 COPY --from=build-stage /app/server.js /app/
