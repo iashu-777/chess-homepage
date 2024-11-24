@@ -20,6 +20,8 @@ WORKDIR /app
 
 # Copy package files and install only production dependencies
 COPY package.json package-lock.json ./
+COPY ./routes /app/routes
+
 RUN npm install --only=production
 
 # Install PM2 globally for production use
