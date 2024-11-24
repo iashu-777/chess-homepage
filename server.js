@@ -3,11 +3,15 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const app = express();
 
-app.use(cors({
-    origin: "*",
-    methods: ["*"],
-    allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
-}));
+const corsOptions = {
+    origin: 'https://prismatic-lamington-297b85.netlify.app' || 'http://localhost:3000', // Replace with Netlify domain in production
+    methods: ['GET', 'POST'], // Allow specific HTTP methods
+    credentials: true, // Allow credentials if required
+    allowedHeaders: ["Content-Type",'Authentication'],
+};
+app.use(cors(corsOptions));
+
+app.options('*', cors(corsOptions)); // Respond to preflight requests
 
 const authRoutes = require('./routes/auth'); // Import auth routes
 const dotenv = require('dotenv');
