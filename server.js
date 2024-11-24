@@ -4,8 +4,8 @@ const cors = require('cors');
 const app = express();
 
 const corsOptions = {
-    origin: 'https://prismatic-lamington-297b85.netlify.app' || 'http://localhost:3000', // Replace with Netlify domain in production
-    methods: ['GET', 'POST'], // Allow specific HTTP methods
+    origin: '*', // Replace with Netlify domain in production
+    methods: ['*'], // Allow specific HTTP methods
     credentials: true, // Allow credentials if required
     allowedHeaders: ["Content-Type",'Authentication'],
 };
