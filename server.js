@@ -1,19 +1,20 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const authRoutes = require('./routes/auth'); // Import auth routes
-const dotenv = require('dotenv');
-dotenv.config();
-
-
 const app = express();
-const allowedOrigin = 'https://prismatic-lamington-297b85.netlify.app';
 
 app.use(cors({
     origin: "*",
     methods: ["*"],
     allowedHeaders: ['Content-Type', 'Authorization'], // Allow specific headers
 }));
+
+const authRoutes = require('./routes/auth'); // Import auth routes
+const dotenv = require('dotenv');
+dotenv.config();
+
+
+
 app.use(express.json()); // Parse JSON payloads
 
 // Mount auth routes
