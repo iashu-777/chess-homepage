@@ -7,27 +7,14 @@ dotenv.config();
 
 
 const app = express();
+const corsOptions = {
+    origin: ['https://prismatic-lamington-297b85.netlify.app', 'http://localhost:3001'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    credentials: true, // Allow cookies
+  };
+  app.use(cors(corsOptions));
+  
 
-// CORS Configuration
-const allowedOrigins = [
-    'https://prismatic-lamington-297b85.netlify.app', // Add your Netlify frontend URL here
-    'http://localhost:3001', // Add your local development frontend
-  ];
-  
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, Postman)
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);
-        } else {
-          callback(new Error('Not allowed by CORS'));
-        }
-      },
-      credentials: true, // Allow cookies and other credentials
-    })
-  );
-  
 app.use(express.json()); // Parse JSON payloads
 
 // Mount auth routes
