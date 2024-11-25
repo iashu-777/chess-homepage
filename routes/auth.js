@@ -42,7 +42,7 @@ router.post('/signup', async (req, res) => {
         await newUser.save();
 
         // Generate JWT token
-        const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: newUser._id }, 'mysecretkey123', { expiresIn: '1h' });
 
         // Send success response with token
         res.status(201).json({ message: 'User signed up successfully!', token });
