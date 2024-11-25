@@ -81,7 +81,7 @@ router.post('/login', async (req, res) => {
         }
 
         // Generate JWT token
-        const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ id: user._id }, 'mysecretkey123', { expiresIn: '1h' });
 
         // Send success response with token
         res.json({ message: 'Login successful!', token });
@@ -99,7 +99,7 @@ const authenticate = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, 'mysecretkey123');
         req.user = decoded; // Add user info to request object
         next(); // Proceed to the next middleware/route handler
     } catch (error) {
