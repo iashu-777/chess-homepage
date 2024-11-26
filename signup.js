@@ -15,7 +15,7 @@ $(document).ready(function () {
     const apiUrl =
       window.location.hostname === "localhost" ||
       window.location.hostname === "127.0.0.1"
-        ? "http://localhost:3001/auth/signup" // Local development
+        ? "http://localhost:3000/auth/signup" // Local development
         : "https://chess-homepage-production.up.railway.app/auth/signup"; // Production URL
 
     $.ajax({

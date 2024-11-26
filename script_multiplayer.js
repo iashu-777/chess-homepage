@@ -13,6 +13,8 @@ let timerInstance = null;
 let opponentDisconnected = false;
 let reconnectWaitTime = 15; // Wait time in seconds before declaring a win
 let reconnectTimer = null;
+let opponentTimerInstance = null; // Timer for the opponent
+
 
 
 function startTimer(seconds, container, oncomplete) {
@@ -147,11 +149,22 @@ function handleButtonClick(event) {
 
 document.addEventListener('DOMContentLoaded', function () {
   const buttons = document.getElementsByClassName('timer-button');
+
+  // Remove existing event listeners if any
   for (let index = 0; index < buttons.length; index++) {
-    const button = buttons[index];
-    button.addEventListener('click', handleButtonClick)
+      const button = buttons[index];
+      const clone = button.cloneNode(true);
+      button.parentNode.replaceChild(clone, button);
+  }
+
+  // Add new event listeners
+  const newButtons = document.getElementsByClassName('timer-button');
+  for (let index = 0; index < newButtons.length; index++) {
+      const button = newButtons[index];
+      button.addEventListener('click', handleButtonClick);
   }
 });
+
 document.addEventListener("DOMContentLoaded", function () {
   const matchId = localStorage.getItem("matchId");
   if (matchId) {
@@ -163,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
 // const socket = io('https://chess-homepage-production.up.railway.app');
 const socket = io(
   location.hostname === "127.0.0.1" 
-    ? "http://127.0.0.1:3000" 
+    ? "http://localhost:3000" 
     : "https://chess-homepage-production.up.railway.app"
 );
 
@@ -172,14 +185,19 @@ socket.on('total_players_count_change', function (totalPlayersCount) {
 })
 
 socket.on("match_made", (color, time, matchId) => {
-  localStorage.setItem("matchId", matchId); // Store match ID locally
+  localStorage.setItem("matchId", matchId);
   c_player = color;
   $('#main-element').show();
   $('#waiting_text_p').hide();
 
   const currentPlayer = color === 'b' ? 'Black' : 'White';
-  $('#buttonsParent').html(`<p id="youArePlayingAs">You are Playing as ${currentPlayer}</p><p id="timerDisplay"></p>`);
-  $('#buttonsParent').addClass('flex-col');
+  $('#buttonsParent').html(`
+      <p id="youArePlayingAs">You are Playing as ${currentPlayer}</p>
+      <div class="flex-row">
+          <p>Your Timer: <span id="timerDisplay">${time}:00</span></p>
+          <p>Opponent Timer: <span id="opponentTimerDisplay">${time}:00</span></p>
+      </div>
+  `);
 
   game.reset();
   board.clear();
@@ -188,30 +206,51 @@ socket.on("match_made", (color, time, matchId) => {
   currentMatchTime = time;
 
   if (game.turn() === c_player) {
-    timerInstance = startTimer(Number(time) * 60, "timerDisplay", function () { alert("Done!"); });
+      timerInstance = startTimer(Number(time) * 60, "timerDisplay", function () { alert("Time's up!"); });
   } else {
-    timerInstance = null;
-    $('#timerDisplay').html(`${currentMatchTime}:00`);
+      opponentTimerInstance = startTimer(Number(time) * 60, "opponentTimerDisplay", function () { alert("Opponent's time is up!"); });
   }
 });
+
 
 
 socket.on('sync_state_from_server', function (fen, turn) {
   game.load(fen);
   game.setTurn(turn);
   board.position(fen);
-  
-  if (timerInstance) {
-    timerInstance.resume();
+
+  if (game.turn() === c_player) {
+      // Player's turn: Resume player's timer and pause opponent's timer
+      if (timerInstance) {
+          timerInstance.resume();
+      } else {
+          timerInstance = startTimer(Number(currentMatchTime) * 60, "timerDisplay", function () { 
+              alert("Time's up!"); 
+              socket.emit('time_out', c_player);
+          });
+      }
+      if (opponentTimerInstance) opponentTimerInstance.pause();
   } else {
-    timerInstance = startTimer(Number(currentMatchTime) * 60, "timerDisplay", function () { alert("Done!"); });
+      // Opponent's turn: Pause player's timer and resume opponent's timer
+      if (timerInstance) timerInstance.pause();
+      if (opponentTimerInstance) {
+          opponentTimerInstance.resume();
+      } else {
+          opponentTimerInstance = startTimer(Number(currentMatchTime) * 60, "opponentTimerDisplay", function () { 
+              alert("Opponent's time is up!");
+              socket.emit('time_out', game.turn());
+          });
+      }
   }
-})
+});
+
+
 
 socket.on('game_over_from_server', function (winner) {
   alert(winner + " won the match");
-  // window.location.reload();
-})
+  localStorage.removeItem("matchId");
+  window.location.reload();
+});
 
 // Handle disconnection
 
@@ -223,55 +262,71 @@ socket.on('game_over_from_server', function (winner) {
 // Handle opponent disconnection
 socket.on('player_disconnected', function () {
   if (!opponentDisconnected) {
-    opponentDisconnected = true;
+      opponentDisconnected = true;
 
-    // Pause the active player's timer
-    if (timerInstance) {
-      timerInstance.pause();
-    }
+      // Pause both timers
+      if (timerInstance) timerInstance.pause();
+      if (opponentTimerInstance) opponentTimerInstance.pause();
 
-    // Notify the player about the opponent's disconnection
-    let waitTime = reconnectWaitTime;
-    $('#timerDisplay').html(`Opponent disconnected! Waiting for ${waitTime}s to reconnect...`);
-    reconnectTimer = setInterval(() => {
-      if (waitTime > 0) {
-        waitTime--;
-        $('#timerDisplay').html(`Opponent disconnected! Waiting for ${waitTime}s to reconnect...`);
-      } else {
-        clearInterval(reconnectTimer);
-        alert("Your opponent did not reconnect in time. You won!");
-        window.location.href = 'index_multiplayer.html';
-      }
-    }, 1000);
+      // Show disconnection modal
+      $('#disconnectionModal').show();
+
+      let waitTime = reconnectWaitTime;
+      const messageElement = $('#disconnectionMessage');
+      messageElement.text(`Opponent disconnected! Waiting for ${waitTime}s to reconnect...`);
+      reconnectTimer = setInterval(() => {
+          if (waitTime > 0) {
+              waitTime--;
+              messageElement.text(`Opponent disconnected! Waiting for ${waitTime}s to reconnect...`);
+          } else {
+              clearInterval(reconnectTimer);
+              reconnectTimer = null;
+              if (opponentDisconnected) {
+                  alert("Your opponent did not reconnect in time. You won!");
+                  $('#disconnectionModal').hide();
+                  window.location.href = 'index_multiplayer.html';
+              }
+          }
+      }, 1000);
   }
 });
+
+
 
 // Handle opponent reconnection
 socket.on('opponent_reconnected', function () {
   if (opponentDisconnected) {
-    opponentDisconnected = false;
+      opponentDisconnected = false;
 
-    // Resume the game and the timer
-    alert("Your opponent has reconnected! The game will continue.");
-    if (timerInstance) {
-      timerInstance.resume();
-    }
+      // Resume timers
+      if (game.turn() === c_player && timerInstance) {
+          timerInstance.resume();
+      } else if (opponentTimerInstance) {
+          opponentTimerInstance.resume();
+      }
 
-    // Clear the reconnect wait message
-    $('#timerDisplay').html(currentMatchTime + ":00");
-    clearInterval(reconnectTimer);
-    reconnectTimer = null;
+      // Hide the disconnection modal
+      $('#disconnectionModal').hide();
+      clearInterval(reconnectTimer);
+      reconnectTimer = null;
+
+      alert("Your opponent has reconnected! The game will continue.");
   }
 });
 
 socket.on("restore_game_state", function (fen, turn, matchId) {
+  if (timerInstance) {
+      timerInstance.pause();
+      timerInstance = null;
+  }
   game.load(fen);
   board.position(fen);
   board.orientation(turn === "w" ? "white" : "black");
+  localStorage.setItem("matchId", matchId); // Ensure match ID is properly updated
 });
 
 socket.on("invalid_match", function () {
-  alert("Failed to reconnect. Starting a new game.");
+  alert("The match you were trying to reconnect to no longer exists. Starting a new game.");
   localStorage.removeItem("matchId");
-  window.location.href = "index.html";
+  window.location.href = "index_multiplayer.html";
 });

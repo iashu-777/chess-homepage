@@ -13,7 +13,7 @@ $(document).ready(function () {
 
         // Determine the backend URL based on the environment
 const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-? 'http://localhost:3001/auth/login'  // Local development
+? 'http://localhost:3000/auth/login'  // Local development
 : 'https://chess-homepage-production.up.railway.app/auth/login';  // Production URL
 
         // Call the login API

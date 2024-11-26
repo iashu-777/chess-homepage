@@ -32,7 +32,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "start": "pm2 start server.js && pm2 start socket.js",
+    "start": "pm2 start server.js",
     "serve": "vite preview",
     "stop": "pm2 stop all",
     "restart": "pm2 restart all"

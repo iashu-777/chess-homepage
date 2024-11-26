@@ -30,7 +30,7 @@
 
             // Fetch current user details
             $.ajax({
-                url: 'http://localhost:3001/auth/profile',
+                url: 'http://localhost:3000/auth/profile',
                 method: 'GET',
                 headers: { Authorization: `Bearer ${token}` },
                 success: function(response) {
@@ -57,7 +57,7 @@
                 }
 // Determine the backend URL based on the environment
 const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3001/auth/updateProfile'  // Local development
+    ? 'http://localhost:3000/auth/updateProfile'  // Local development
     : 'https://chess-homepage-production.up.railway.app/auth/updateProfile';  // Production URL
 
                 $.ajax({

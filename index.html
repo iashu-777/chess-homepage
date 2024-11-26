@@ -29,8 +29,8 @@
             <nav>
                 <ul>
                     <li><a href="#home"><img src="image/chess_logo.png" alt="Chess Arena Logo" class="logo"></a></li>
-                    <li class="dropdown hidden" id="stats"><a href="#stats">Stats</a></li>
-                    <li class="hidden" id="awards"><a href="#awards">Awards</a></li>
+                    <li class="dropdown hidden" id="stats"><a href="stats.html">Stats</a></li>
+                    <li class="hidden" id="awards"><a href="awards.html">Awards</a></li>
                     <li class="hidden" id="profileLink"><a href="profile.html">Profile</a></li>
                     <li class="hidden" id="leaderboard"><a href="#leaderboard">Leaderboard</a></li>
                     <li class="spacer"></li>
@@ -88,7 +88,7 @@
 
                 // Determine the backend URL based on the environment
 const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3001/auth/profile'  // Local development
+    ? 'http://localhost:3000/auth/profile'  // Local development
     : 'https://chess-homepage-production.up.railway.app/auth/profile';  // Production URL
 
                 // Fetch user profile info
