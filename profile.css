@@ -1,0 +1,100 @@
+/* General Reset */
+body, h2, label, input, button {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Body Styling */
+body {
+    background-color: #f4f4f9;
+    color: #333;
+    font-size: 16px;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Header Styling */
+h2 {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    text-align: center;
+    color: #4a4a8c;
+}
+
+/* Form Container */
+form#profileForm {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    align-items: stretch;
+}
+
+/* Form Labels */
+label {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Form Inputs */
+input[type="text"], input[type="email"], input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus, 
+input[type="email"]:focus, 
+input[type="file"]:focus {
+    border-color: #4a4a8c;
+    outline: none;
+}
+
+/* Save Button */
+button[type="submit"] {
+    padding: 12px;
+    background-color: #4a4a8c;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button[type="submit"]:hover {
+    background-color: #373764;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+    form#profileForm {
+        padding: 15px;
+        gap: 15px;
+    }
+
+    h2 {
+        font-size: 1.5rem;
+    }
+
+    button[type="submit"] {
+        padding: 10px;
+        font-size: 0.9rem;
+    }
+}

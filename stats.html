@@ -23,11 +23,13 @@
 
   <main class="profile-container">
     <section class="player-info">
-      <img src="image/player_avtar.jpeg" alt="Player Avatar" class="avatar">
-      <h1 class="player-name">John Doe</h1>
-      <p class="rating">Current Rating: 2200 Elo</p>
+      <img id="player-avatar" src="image/player_avatar.jpeg" alt="Player Avatar" class="avatar">
+      <h1 id="user-name" class="player-name">Loading...</h1>
+      <p id="user-rating" class="rating">Rating: Loading...</p>
       <div class="win-loss">
-        <span>Wins: 150</span> | <span>Losses: 50</span> | <span>Draws: 20</span>
+        <span id="win-count">Wins: 0</span> |
+        <span id="loss-count">Losses: 0</span> |
+        <span id="draw-count">Draws: 0</span>
       </div>
     </section>
 
@@ -35,34 +37,26 @@
       <h2>Statistics</h2>
       <div class="stat">
         <h3>Games Played</h3>
-        <p>200 total games</p>
+        <p id="total-games">0 total games</p>
       </div>
       <div class="stat">
         <h3>Win Rate</h3>
-        <p>75% win rate</p>
-      </div>
-      <div class="stat">
-        <h3>Average Elo</h3>
-        <p>2200 Elo</p>
+        <p id="win-rate">0% win rate</p>
       </div>
 
       <h3>Game Breakdown</h3>
       <div class="stat">
-        <p>Classical: 50 games | Win rate: 80%</p>
-        <p>Blitz: 120 games | Win rate: 70%</p>
-        <p>Bullet: 30 games | Win rate: 60%</p>
+        <p id="classical-stats">Classical: 0 games | Win rate: 0%</p>
+        <p id="blitz-stats">Blitz: 0 games | Win rate: 0%</p>
+        <p id="bullet-stats">Bullet: 0 games | Win rate: 0%</p>
       </div>
     </section>
 
     <section class="milestones">
       <h2>Milestones</h2>
-      <div class="milestone">
-        <h3>100 Games Played</h3>
-        <p>Congratulations! You've played 100 games.</p>
-      </div>
-      <div class="milestone">
-        <h3>Reach 2500 Elo</h3>
-        <p>Next milestone: Reach 2500 Elo to unlock the Grandmaster badge.</p>
+      <div id="milestone-1" class="milestone">
+        <h3>Loading...</h3>
+        <p>Loading...</p>
       </div>
     </section>
   </main>
@@ -70,5 +64,6 @@
   <footer>
     <p>&copy; 2024 Chess Arena - All Rights Reserved</p>
   </footer>
+  <script src="stats.js"></script>
 </body>
 </html>

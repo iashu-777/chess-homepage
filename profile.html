@@ -4,7 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
-    <link rel="stylesheet" href="css/profile.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="/routes/profile.js"></script>
+    <link rel="stylesheet" href="profile.css">
+
 </head>
 <body>
     <h2>Edit Profile</h2>
@@ -17,65 +20,5 @@
         <input type="file" id="profilePicture" name="profilePicture">
         <button type="submit">Save</button>
     </form>
-
-    <script>
-        $(document).ready(function () {
-            const token = localStorage.getItem('token');
-
-            if (!token) {
-                alert('You need to log in first!');
-                window.location.href = '/login.html';
-                return;
-            }
-
-            // Fetch current user details
-            $.ajax({
-                url: 'http://localhost:3000/auth/profile',
-                method: 'GET',
-                headers: { Authorization: `Bearer ${token}` },
-                success: function(response) {
-                    $('#username').val(response.user.username);
-                    $('#email').val(response.user.email);
-                },
-                error: function(error) {
-                    console.error('Error fetching profile:', error);
-                }
-            });
-
-            $('#profileForm').on('submit', function (event) {
-                event.preventDefault();
-                
-                const updatedUsername = $('#username').val();
-                const updatedEmail = $('#email').val();
-                const profilePicture = $('#profilePicture')[0].files[0];
-
-                const formData = new FormData();
-                formData.append('username', updatedUsername);
-                formData.append('email', updatedEmail);
-                if (profilePicture) {
-                    formData.append('profilePicture', profilePicture);
-                }
-// Determine the backend URL based on the environment
-const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000/auth/updateProfile'  // Local development
-    : 'https://chess-homepage-production.up.railway.app/auth/updateProfile';  // Production URL
-
-                $.ajax({
-                    url: apiUrl,
-                    method: 'POST',
-                    headers: { Authorization: `Bearer ${token}` },
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    success: function (response) {
-                        alert('Profile updated successfully');
-                    },
-                    error: function (error) {
-                        console.error('Error updating profile:', error);
-                    }
-                });
-            });
-        });
-    </script>
-</body>
+    </body>
 </html>

@@ -114,7 +114,11 @@ router.get('/profile', authenticate, async (req, res) => {
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
-        res.json({ user });
+        res.json({ user:{
+            username:user.username,
+            email:user.email,
+            profilePicture:user.profilePicture || null
+        } });
     } catch (error) {
         console.error('Error fetching profile:', error);
         res.status(500).json({ error: 'Something went wrong!' });
@@ -127,12 +131,14 @@ router.post('/updateProfile', authenticate, upload.single('profilePicture'), asy
         const { username, email } = req.body;
         const updateData = { username, email };
 
+        // Check if a new profile picture is uploaded
         if (req.file) {
-            updateData.profilePicture = `/uploads/${req.file.filename}`; // Save the file path to the database
+            updateData.profilePicture = `/uploads/${req.file.filename}`; // Save file path
         }
 
-        // Update user profile
+        // Update user profile in the database
         const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
+
         if (!user) {
             return res.status(404).json({ error: 'User not found' });
         }
@@ -143,7 +149,6 @@ router.post('/updateProfile', authenticate, upload.single('profilePicture'), asy
         res.status(500).json({ error: 'Something went wrong!' });
     }
 });
-
 // POST request to log out the user
 router.post('/logout', (req, res) => {
     res.json({ message: 'Successfully logged out' });
