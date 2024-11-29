@@ -6,7 +6,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/auth'); // Import auth routes
 const Match = require('./models/Match'); // Import Match model
-
+const statsRoute=require('./routes/stats');
 dotenv.config();
 
 const PORT = 3000;
@@ -41,6 +41,7 @@ app.use(cors({
 
 // Routes
 app.use('/auth', authRoutes); // Auth routes
+app.use('/stats',statsRoute); 
 app.get('/', (req, res) => res.send('Server is running!'));
 
 // MongoDB connection

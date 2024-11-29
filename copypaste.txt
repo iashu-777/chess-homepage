@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const Match = require('../models/Match');  // Assuming this is your match model
+const Match = require('../models/match');  // Assuming this is your match model
 
 // Token authentication middleware
 const authenticate = (req, res, next) => {
-const token = localStorage.getItem('token');
-// Extract token
-    if (!token) {
+  const token = req.headers['authorization']?.split(' ')[1]; // Extract token
+  if (!token) {
     return res.status(401).json({ error: 'No token provided, authorization denied' });
   }
   try {

@@ -6,6 +6,7 @@ const multer = require('multer');
 const path = require('path');
 const User = require('../models/user'); // Import the User model
 
+
 // Middleware to parse JSON request bodies
 router.use(express.json());
 
@@ -106,6 +107,63 @@ const authenticate = (req, res, next) => {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 };
+router.get('/stats', authenticate, async (req, res) => {
+    try {
+      // Extract and verify the token
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.split(' ')[1]; // Format: "Bearer <token>"
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'mysecretkey123'); // Use your secret key
+
+    // Fetch user stats from the database
+    const userId = decoded.id; // Assuming the token contains `id`
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+      // Construct the stats object from the user data
+      const stats = {
+        totalGames: user.wins + user.losses + user.draws,
+        winRate: (
+          (user.wins / (user.wins + user.losses + user.draws || 1)) *
+          100
+        ).toFixed(2) + '%',
+        classical: {
+          games: user.classicalGames,
+          winRate: (
+            (user.classicalWins / user.classicalGames || 1) *
+            100
+          ).toFixed(2) + '%',
+        },
+        blitz: {
+          games: user.blitzGames,
+          winRate: (
+            (user.blitzWins / user.blitzGames || 1) *
+            100
+          ).toFixed(2) + '%',
+        },
+        bullet: {
+          games: user.bulletGames,
+          winRate: (
+            (user.bulletWins / user.bulletGames || 1) *
+            100
+          ).toFixed(2) + '%',
+        },
+      };
+  
+      // Send stats as JSON response
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      res.status(500).json({ error: 'Failed to fetch stats' });
+    }
+  });
+  
 
 // GET request to fetch the current user's profile
 router.get('/profile', authenticate, async (req, res) => {
@@ -117,7 +175,16 @@ router.get('/profile', authenticate, async (req, res) => {
         res.json({ user:{
             username:user.username,
             email:user.email,
+            rating: user.rating,
+            wins: user.wins,
+            losses: user.losses,
+            draws: user.draws,
+            milestones: [
+                { id: 1, title: 'First Game', achieved: user.wins + user.losses + user.draws > 0 },
+                { id: 2, title: '10 Wins', achieved: user.wins >= 10 },
+            ],
             profilePicture:user.profilePicture || null
+
         } });
     } catch (error) {
         console.error('Error fetching profile:', error);
