@@ -1,71 +1,115 @@
-const express = require('express');
-const router = express.Router();
-const jwt = require('jsonwebtoken');
-const User = require('../models/user');
-const Match = require('../models/match');  // Assuming this is your match model
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chess 2024 by Ashu</title>
 
-// Token authentication middleware
-const authenticate = (req, res, next) => {
-  const token = req.headers['authorization']?.split(' ')[1]; // Extract token
-  if (!token) {
-    return res.status(401).json({ error: 'No token provided, authorization denied' });
-  }
-  try {
-    const decoded = jwt.verify(token, 'mysecretkey123');
-    req.user = decoded; // Add user info to request object
-    next(); // Proceed to the next middleware/route handler
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
-};
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
 
-// Stats route
-router.get('/stats', authenticate, async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
+    <!-- Chessboard.js -->
+    <script src="/lib/chess.js"></script>
 
-    // Aggregate match statistics
-    const matchStats = await Match.aggregate([
-      { $match: { playerId: userId } },
-      {
-        $group: {
-          _id: "$type",
-          games: { $sum: 1 },
-          wins: { $sum: { $cond: ["$won", 1, 0] } },
-        },
-      },
-    ]);
+    <!-- Mobile and Desktop Chessboard Styles -->
+    <link rel="stylesheet" href="css/chessboard.css" id="chessboard-css">
+    <link rel="stylesheet" href="css/board.css">
 
-    // Process stats for each format
-    const formats = ['classical', 'blitz', 'bullet'];
-    const formattedStats = formats.reduce((acc, format) => {
-      const formatData = matchStats.find((stat) => stat._id === format) || { games: 0, wins: 0 };
-      const winRate = formatData.games ? ((formatData.wins / formatData.games) * 100).toFixed(2) : '0.00';
-      acc[format] = { games: formatData.games, winRate };
-      return acc;
-    }, {});
+    <script>
+        // Function to check if the device is mobile
+        function is_touch_device() {
+            return 'ontouchstart' in window || navigator.maxTouchPoints;
+        };
 
-    // Prepare response
-    const stats = {
-      name: user.username || 'Unknown Player',
-      rating: user.rating || 0,
-      wins: user.wins || 0,
-      losses: user.losses || 0,
-      draws: user.draws || 0,
-      ...formattedStats,
-      milestones: [
-        { title: "100 Games Played", description: "Congratulations on reaching 100 games!" },
-        { title: "Reach 2500 Elo", description: "Next goal: Grandmaster badge." },
-      ],
-    };
+        // Load appropriate CSS for mobile or desktop
+        function loadCss(cssId, cssHref) {
+            $('#' + cssId).attr('href', cssHref);
+        }
 
-    res.json(stats); // Send the stats as JSON response
-  } catch (err) {
-    console.error('Error fetching stats:', err);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-});
+        var mobileLibs = 8;
+        var desktopLibs = 8;
+        var isMobile = is_touch_device();
 
-module.exports = router; // Make sure to export the router
+        // Check if mobile or desktop and load necessary scripts
+        if (isMobile == true) {
+            var chess, board;
+            loadCss('chessboard-css', 'css/caustique-chessboard.css');
+            $.getScript('js/mobile/chessboard-caustique-min.js', initGameBoard('mobile'));
+            $.getScript('js/board-controls-side.js', initGameBoard('mobile'));
+            $.getScript('js/board-controls-bottom.js', initGameBoard('mobile'));
+            $.getScript('js/board-sets.js', initGameBoard('mobile'));
+            $.getScript('js/board-time.js', initGameBoard('mobile'));
+            $.getScript('js/board-actions.js', initGameBoard('mobile'));
+            $.getScript('js/mobile/board-actions-mobile.js', initGameBoard('mobile'));
+            $.getScript('js/board-init.js', initGameBoard('mobile'));
+        } else {
+            loadCss('chessboard-css', 'css/chessboard.css');
+            $.getScript('js/libs/chessboard.min.js', initGameBoard('desktop'));
+            $.getScript('js/board-controls-side.js', initGameBoard('desktop'));
+            $.getScript('js/board-controls-bottom.js', initGameBoard('desktop'));
+            $.getScript('js/board-sets.js', initGameBoard('desktop'));
+            $.getScript('js/board-time.js', initGameBoard('desktop'));
+            $.getScript('js/board-actions.js', initGameBoard('desktop'));
+            $.getScript('js/board-actions-desktop.js', initGameBoard('desktop'));
+            $.getScript('js/board-init.js', initGameBoard('desktop'));
+        }
+
+        function initGameBoard(lib = false) {
+            if (lib == 'mobile') {
+                mobileLibs--;
+                if (mobileLibs == 0) {
+                    console.log('Mobile loaded');
+                    setTimeout(function() {
+                        setMobileBoard();
+                    }, 1000);
+                }
+            }
+            if (lib == 'desktop') {
+                desktopLibs--;
+                if (desktopLibs == 0) {
+                    console.log('Desktop loaded');
+                    setTimeout(function() {
+                        setDesktopBoard();
+                    }, 1000);
+                }
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Your existing content -->
+
+    <div class="content">
+        <span align="center">
+            <a href="https://prismatic-lamington-297b85.netlify.app/" style="color:#ffffff">
+                <img width="80" height="80" src="img/icons/favicon.svg" style="display: block; margin-left: auto; margin-right: auto">
+                <h1 align="center" style="font-weight:600">Chess-Arena</h1>
+            </a>
+            <h2 align="center" style="color:#ffffff">Play Chess Against Opponents</h2>
+            <br />
+        </span>
+        <div class="chess-area">
+            <div class="board-table">
+                <div id="board-top-controls" class="top-controls">
+                    <!-- Board control popups here -->
+                </div>
+                <div id="board" class="board"></div>
+                <div id="board-controls" class="controls">
+                    <!-- Board controls for desktop and mobile -->
+                </div>
+            </div>
+            <div class="board-settings">
+                <!-- Settings and history -->
+            </div>
+        </div>
+        <div class="chess-log"></div>
+    </div>
+
+    <script>
+        // Any additional scripts or setup specific to mobile
+        function setMobileBoard() {
+            // Mobile board setup if necessary
+        }
+    </script>
+</body>
+</html>
