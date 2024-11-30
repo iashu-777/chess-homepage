@@ -51,6 +51,7 @@ router.get('/stats', authenticate, async (req, res) => {
     // Prepare response
     const stats = {
       name: user.username || 'Unknown Player',
+      profilePicture:user.profilePicture,
       rating: user.rating || 0,
       wins: user.wins || 0,
       losses: user.losses || 0,

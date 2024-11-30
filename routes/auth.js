@@ -128,6 +128,11 @@ router.get('/stats', authenticate, async (req, res) => {
 
       // Construct the stats object from the user data
       const stats = {
+        name: user.username || 'Unknown Player',
+        profilePicture:user.profilePicture,
+        wins: user.wins || 0,
+        losses: user.losses || 0,
+        draws: user.draws || 0,
         totalGames: user.wins + user.losses + user.draws,
         winRate: (
           (user.wins / (user.wins + user.losses + user.draws || 1)) *
@@ -154,6 +159,10 @@ router.get('/stats', authenticate, async (req, res) => {
             100
           ).toFixed(2) + '%',
         },
+        milestones: [
+            { title: "100 Games Played", description: "Congratulations on reaching 100 games!" },
+            { title: "Reach 2500 Elo", description: "Next goal: Grandmaster badge." },
+          ],
       };
   
       // Send stats as JSON response
