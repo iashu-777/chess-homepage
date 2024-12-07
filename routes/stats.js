@@ -6,22 +6,24 @@ const Match = require('../models/Match');  // Assuming this is your match model
 
 // Token authentication middleware
 const authenticate = (req, res, next) => {
-const token = localStorage.getItem('token');
-// Extract token
-    if (!token) {
-    return res.status(401).json({ error: 'No token provided, authorization denied' });
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided, authorization denied' });
   }
+  const token = authHeader.split(' ')[1];
   try {
-    const decoded = jwt.verify(token, 'mysecretkey123');
-    req.user = decoded; // Add user info to request object
-    next(); // Proceed to the next middleware/route handler
+      const decoded = jwt.verify(token, 'mysecretkey123');
+      req.user = decoded;
+      next();
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+      return res.status(401).json({ error: 'Invalid or expired token' });
   }
 };
 
+
+
 // Stats route
-router.get('/stats', authenticate, async (req, res) => {
+router.get('/auth/stats', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
