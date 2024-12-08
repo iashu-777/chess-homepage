@@ -31,7 +31,7 @@ ul {
 }
 
 button {
-    background-color: #4CAF50;
+    background-color: #056608;
     color: white;
     border: none;
     padding: 10px 20px;
@@ -125,7 +125,7 @@ button:hover {
 
 /* Button Styling for Login and Sign Up */
 .sidebar nav ul li .btn {
-    background-color: #4CAF50;
+    background-color: #056608;
     color: white;
     padding: 12px 20px;
     font-size: 18px;
@@ -181,8 +181,8 @@ main {
     flex-grow: 1; /* Allows right section to grow and take available space */
 }
 
-.right-section h2 {
-    font-size: 24px;
+.right-section h1 {
+    font-size: 40px;
     font-weight: 600;
     margin-bottom: 15px;
 }
@@ -190,8 +190,9 @@ main {
 .right-section button {
     width: 100%;
     padding: 15px;
-    font-size: 18px;
+    font-size: 30px;
     text-align: left;
+    font-weight: bolder;
     transition: background-color 0.3s ease;
 }
 
