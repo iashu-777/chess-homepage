@@ -21,7 +21,7 @@ if (!token) {
       // Update player info
       $('#player-avatar').attr('src', data.profilePicture || 'image/player_avatar.jpeg');
       $('#user-name').text(data.name || 'Unknown Player');
-      $('#user-rating').text(`Rating: ${data.rating || 0} Elo`);
+      $('#user-rating').text(`Rating: ${data.rating || 1200} Elo`);
       $('#win-count').text(`Wins: ${data.wins || 0}`);
       $('#loss-count').text(`Losses: ${data.losses || 0}`);
       $('#draw-count').text(`Draws: ${data.draws || 0}`);
