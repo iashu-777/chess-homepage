@@ -73,6 +73,7 @@ function onChange() {
     if (game.in_checkmate()) {
       const winner = game.turn() === 'b' ? 'White' : 'Black';
       socket.emit('game_over', winner);
+      alert(winner + " won the match");
     }
   }
 }
