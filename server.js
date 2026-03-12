@@ -46,7 +46,7 @@ app.get('/', (req, res) => res.send('Server is running!'));
 
 // MongoDB connection
 mongoose
-    .connect('mongodb+srv://iashu-777:fatherhadadonkey@cluster0.xm1o9.mongodb.net/chess_db?retryWrites=true&w=majority&appName=Cluster0', {
+    .connect(MONGO_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
     })

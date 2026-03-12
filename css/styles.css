@@ -7,7 +7,7 @@
 
 body {
     font-family: 'Arial', sans-serif;
-    background-color: #1e1e1e;
+    background-color: #000000;
     color: #fff;
     line-height: 1.6;
     background-image: url('https://4kwallpapers.com/images/walls/thumbs_3t/965.jpg');
@@ -22,7 +22,7 @@ h2, h3 {
 }
 
 a {
-    text-decoration: none;
+    text-decoration:none;
     color: #fff;
 }
 
