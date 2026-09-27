@@ -4,7 +4,6 @@ const { Server } = require('socket.io'); // Import Socket.IO
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const authRoutes = require('./routes/auth'); // Import auth routes
 const Match = require('./models/Match'); // Import Match model
 const statsRoute=require('./routes/stats');
 dotenv.config();
@@ -44,6 +43,7 @@ app.use(cors({
     credentials: true,
 }));
 
+const authRoutes = require('./routes/auth'); // Import auth routes
 // Routes
 app.use('/auth', authRoutes); // Auth routes
 app.use('/stats',statsRoute); 
