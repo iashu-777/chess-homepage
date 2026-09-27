@@ -19,7 +19,7 @@ app.use(cors({
 }));
 const io = new Server(server, {
     cors: {
-        origin: '*',
+        origin: 'https://prismatic-lamington-297b85.netlify.app',
         methods: ['GET', 'POST'],
         allowedHeaders: ['Content-Type'],
     },
