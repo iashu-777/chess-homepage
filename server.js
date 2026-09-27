@@ -12,6 +12,11 @@ dotenv.config();
 const PORT = 3000;
 const app = express();
 const server = http.createServer(app); // Shared HTTP server
+app.use(cors({
+    origin: 'https://prismatic-lamington-297b85.netlify.app', // Aapka frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    credentials: true
+}));
 const io = new Server(server, {
     cors: {
         origin: '*',
