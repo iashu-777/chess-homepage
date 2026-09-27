@@ -13,13 +13,13 @@ const app = express();
 const server = http.createServer(app); // Shared HTTP server
 app.use(cors({
     origin: 'https://prismatic-lamington-297b85.netlify.app', // Aapka frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'],
     credentials: true
 }));
 const io = new Server(server, {
     cors: {
         origin: 'https://prismatic-lamington-297b85.netlify.app',
-        methods: ['GET', 'POST'],
+        methods: ['GET', 'POST','OPTIONS'],
         allowedHeaders: ['Content-Type'],
     },
 });
