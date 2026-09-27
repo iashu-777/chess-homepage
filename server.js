@@ -21,6 +21,7 @@ const io = new Server(server, {
         origin: 'https://prismatic-lamington-297b85.netlify.app',
         methods: ['GET', 'POST','OPTIONS'],
         allowedHeaders: ['Content-Type'],
+        credentials: true
     },
 });
 
