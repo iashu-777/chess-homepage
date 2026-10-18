@@ -4,20 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Edit Profile</title>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="/routes/profile.js"></script>
+    <script src="js/libs/jquery-3.6.0.min.js"></script>
+    <script src="profile.js"></script>
     <link rel="stylesheet" href="profile.css">
 
 </head>
 <body>
+    <p><a href="index.html">&larr; Home</a></p>
     <h2>Edit Profile</h2>
+    <img id="userAvatar" src="image/default-avatar.png" alt="Avatar" style="width:80px;height:80px;border-radius:50%;object-fit:cover">
     <form id="profileForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
         <label for="email">Email:</label>
         <input type="email" id="email" name="email" required>
         <label for="profilePicture">Profile Picture:</label>
-        <input type="file" id="profilePicture" name="profilePicture">
+        <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
         <button type="submit">Save</button>
     </form>
     </body>

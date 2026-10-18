@@ -7,15 +7,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>Play Chess Against Stockfish 16 Online For Free - BoldChess</title>
+    <title>Play vs Computer - Chess Arena</title>
     <meta name="description" content="Play chess against Stockfish 16 online for free." />
 
-    <meta property="og:url" content="index.html">
-    <meta property="og:type" content="website">
+        <meta property="og:type" content="website">
     <meta property="og:title" content="Play Chess Against Stockfish 16 Online For Free">
     <meta property="og:description" content="Play chess against Stockfish 16 online for free.">
 
-    <link rel="icon" type="image/svg" href="image\logo_arena.png" />
+    <link rel="icon" type="image/svg" href="image/logo_arena.png" />
 
     <link rel="stylesheet" id="chessboard-css" href="css/chessboard.css" />
     <link rel="stylesheet" href="css/board.css" />
@@ -31,8 +30,8 @@
 <body bgcolor="#000000">
     <div class="content">
     	<span align="center">
-            <a href="https://prismatic-lamington-297b85.netlify.app/" style="color:#ffffff">
-                <img  width="80" height="80" src="image\logo_arena.png" style="display: block; margin-left: auto; margin-right: auto">
+            <a href="index.html" style="color:#ffffff">
+                <img  width="80" height="80" src="image/logo_arena.png" style="display: block; margin-left: auto; margin-right: auto">
                 <h1 align="center" style="font-weight:600">Chess-Arena</h1>
             </a>
             <h2 align="center" style="color:#ffffff">Play Chess Against AI</h2>
@@ -169,65 +168,41 @@
             $('#' + cssId).attr('href', cssHref);
         }
 
-        var mobileLibs = 8;
-        var desktopLibs = 8;
-
-        var isMobile = is_touch_device();
-
-        if (isMobile == true) {
-
-            var chess, board;
-
-            loadCss('chessboard-css', 'css/caustique-chessboard.css');
-
-            $.getScript('js/mobile/chessboard-caustique-min.js', initGameBoard('mobile'));
-            $.getScript('js/board-controls-side.js', initGameBoard('mobile'));
-            $.getScript('js/board-controls-bottom.js', initGameBoard('mobile'));
-            $.getScript('js/board-sets.js', initGameBoard('mobile'));
-
-            $.getScript('js/board-time.js', initGameBoard('mobile'));
-            $.getScript('js/board-actions.js', initGameBoard('mobile'));
-            $.getScript('js/mobile/board-actions-mobile.js', initGameBoard('mobile'));
-            $.getScript('js/board-init.js', initGameBoard('mobile'));
-
-        } else {
-
-            loadCss('chessboard-css', 'css/chessboard.css');
-
-            $.getScript('js/libs/chessboard.min.js', initGameBoard('desktop'));
-            $.getScript('js/board-controls-side.js', initGameBoard('desktop'));
-            $.getScript('js/board-controls-bottom.js', initGameBoard('desktop'));
-            $.getScript('js/board-sets.js', initGameBoard('desktop'));
-
-            $.getScript('js/board-time.js', initGameBoard('desktop'));
-            $.getScript('js/board-actions.js', initGameBoard('desktop'));
-            $.getScript('js/board-actions-desktop.js', initGameBoard('desktop'));
-            $.getScript('js/board-init.js', initGameBoard('desktop'));
-
+        // Scripts must load one after another (each depends on the previous ones).
+        // Pehle $.getScript(url, initGameBoard('x')) tha - wo function turant call kar deta tha,
+        // callback nahi banta tha, isliye board sirf 1 sec ke setTimeout ki kismat pe chalta tha.
+        function loadScriptsInOrder(urls, done) {
+            if (!urls.length) return done();
+            $.getScript(urls[0])
+                .done(function () { loadScriptsInOrder(urls.slice(1), done); })
+                .fail(function (jqxhr, settings, err) { console.error('Failed to load', urls[0], err); });
         }
 
-        function initGameBoard(lib = false) {
-
-            if (lib == 'mobile') {
-                mobileLibs--;
-                if (mobileLibs == 0) {
-                    console.log('Mobile loaded');
-                    setTimeout(function() {
-                        setMobileBoard();
-                    }, 1000);
-                }
-            }
-
-            if (lib == 'desktop') {
-                desktopLibs--;
-                if (desktopLibs == 0) {
-                    console.log('Desktop loaded');
-                    setTimeout(function() {
-                        setDesktopBoard();
-                    }, 1000);
-                }
-            }
-
+        if (is_touch_device()) {
+            var chess, board;
+            loadCss('chessboard-css', 'css/caustique-chessboard.css');
+            loadScriptsInOrder([
+                'js/mobile/chessboard-caustique-min.js',
+                'js/board-controls-side.js',
+                'js/board-controls-bottom.js',
+                'js/board-sets.js',
+                'js/board-time.js',
+                'js/board-actions.js',
+                'js/mobile/board-actions-mobile.js',
+                'js/board-init.js'
+            ], function () { setMobileBoard(); });
+        } else {
+            loadCss('chessboard-css', 'css/chessboard.css');
+            loadScriptsInOrder([
+                'js/libs/chessboard.min.js',
+                'js/board-controls-side.js',
+                'js/board-controls-bottom.js',
+                'js/board-sets.js',
+                'js/board-time.js',
+                'js/board-actions.js',
+                'js/board-actions-desktop.js',
+                'js/board-init.js'
+            ], function () { setDesktopBoard(); });
         }
     </script>
 

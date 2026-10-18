@@ -5,11 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chess Arena</title>
     <link rel="stylesheet" href="css/styles.css">
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js" 
-            integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" 
-            crossorigin="anonymous"></script>
+    <script src="js/libs/jquery-3.6.0.min.js"></script>
     <link rel="stylesheet" href="./lib/chessboardjs/css/chessboard-1.0.0.min.css">
-    <script src="/lib/chess.js"></script>
+    <script src="lib/chess.js"></script>
     <style>
         /* Add some CSS for styling */
         .hidden {
@@ -28,12 +26,11 @@
         <aside class="sidebar">
             <nav>
                 <ul>
-                    <li><a href="#home"><img src="image/logo_arena.png" alt="Chess Arena Logo" class="logo"></a></li>
+                    <li><a href="index.html"><img src="image/logo_arena.png" alt="Chess Arena Logo" class="logo"></a></li>
                     <li class="dropdown hidden" id="stats"><a href="stats.html">Stats</a></li>
                     <li class="hidden" id="awards"><a href="awards.html">Awards</a></li>
                     <li class="hidden" id="profileLink"><a href="profile.html">Profile</a></li>
-                    <li class="hidden" id="leaderboard"><a href="#leaderboard">Leaderboard</a></li>
-                    <li class="spacer"></li>
+                                        <li class="spacer"></li>
                     <li id="loginSection"><a href="login.html" class="btn" id="loginBtn">Login</a></li>
                     <li id="signupSection"><a href="signup.html" class="btn" id="signupBtn">Sign Up</a></li>
                     <li class="hidden" id="logoutSection"><button id="logoutBtn" class="btn">Logout</button></li>
@@ -82,14 +79,10 @@
                 $('#stats').removeClass('hidden');
                 $('#awards').removeClass('hidden');
                 $('#profileLink').removeClass('hidden');
-                $('#leaderboard').removeClass('hidden');
-                $('#logoutSection').removeClass('hidden');
+                                $('#logoutSection').removeClass('hidden');
                 $('#userProfile').removeClass('hidden');
 
-                // Determine the backend URL based on the environment
-const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-    ? 'http://localhost:3000/auth/profile'  // Local development
-    : 'https://chess-homepage-production.up.railway.app/auth/profile';  // Production URL
+                const apiUrl = '/auth/profile'; // same-origin backend
 
                 // Fetch user profile info
                 $.ajax({
@@ -102,8 +95,12 @@ const apiUrl = window.location.hostname === 'localhost' || window.location.hostn
                             $('#userAvatar').attr('src', response.user.profilePicture);
                         }
                     },
-                    error: function(error) {
-                        console.error('Error fetching profile:', error);
+                    error: function(xhr) {
+                        console.error('Error fetching profile:', xhr.status);
+                        if (xhr.status === 401 || xhr.status === 404) { // expired token / deleted user
+                            localStorage.removeItem('token');
+                            window.location.reload();
+                        }
                     }
                 });
             } else {

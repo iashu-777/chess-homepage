@@ -8,9 +8,7 @@ $(document).ready(function () {
         return;
     }
 
-    const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000/auth/profile'
-        : 'https://chess-homepage-production.up.railway.app/auth/profile';
+    const apiUrl = '/auth/profile';
 
     // Fetch user profile
     $.ajax({
@@ -53,9 +51,7 @@ $(document).ready(function () {
             formData.append('profilePicture', profilePicture);
         }
 
-        const updateUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-            ? 'http://localhost:3000/auth/updateProfile'
-            : 'https://chess-homepage-production.up.railway.app/auth/updateProfile';
+        const updateUrl = '/auth/updateProfile';
 
         $.ajax({
             url: updateUrl,
@@ -77,7 +73,7 @@ $(document).ready(function () {
             },
             error: function (error) {
                 console.error('Profile Update Error:', error);
-                alert('An error occurred while updating your profile.');
+                alert(error.responseJSON?.error || 'An error occurred while updating your profile.');
             }
         });
     });

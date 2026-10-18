@@ -1,10 +1,7 @@
-
+$(function () {
 // Fetch stats dynamically using jQuery AJAX
 const token = localStorage.getItem('token');
-console.log(token);
-const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-        ? 'http://localhost:3000/auth/stats'
-        : 'https://chess-homepage-production.up.railway.app/auth/stats';
+const apiUrl = '/auth/stats';
 
 if (!token) {
   alert('Please log in first!');
@@ -17,7 +14,6 @@ if (!token) {
       Authorization: `Bearer ${token}`
     },
     success: function(data) {
-      console.log(data)
       // Update player info
       $('#player-avatar').attr('src', data.profilePicture || 'image/player_avatar.jpeg');
       $('#user-name').text(data.name || 'Unknown Player');
@@ -26,34 +22,37 @@ if (!token) {
       $('#loss-count').text(`Losses: ${data.losses || 0}`);
       $('#draw-count').text(`Draws: ${data.draws || 0}`);
       
-      // Update stats
-      const totalGames = data.wins + data.losses + data.draws;
-      $('#total-games').text(`${totalGames} total games`);
-      const winRate = totalGames ? ((data.wins / totalGames) * 100).toFixed(2) : '0.00';
-      $('#win-rate').text(`${winRate}% win rate`);
+      // Update stats (server sends numbers, we add the "%")
+      $('#total-games').text(`${data.totalGames} total games`);
+      $('#win-rate').text(`${data.winRate}% win rate`);
       
       // Update game breakdown
       const formats = ['classical', 'blitz', 'bullet'];
       formats.forEach((format) => {
-        const formatData = data[format] || { games: 0, winRate: '0.00' };
+        const formatData = data[format] || { games: 0, winRate: 0 };
         $(`#${format}-stats`).text(
           `${format.charAt(0).toUpperCase() + format.slice(1)}: ${formatData.games} games | Win rate: ${formatData.winRate}%`
         );
       });
       
       // Update milestones
-      const milestones = data.milestones || [];
-      milestones.forEach((milestone, index) => {
-        const milestoneElement = $(`#milestone-${index + 1}`);
-        if (milestoneElement.length) {
-          milestoneElement.find('h3').text(milestone.title || 'No milestone');
-          milestoneElement.find('p').text(milestone.description || 'No milestone description');
-        }
+      const $list = $('#milestone-list').empty();
+      (data.milestones || []).forEach((milestone) => {
+        const $m = $('<div class="milestone"></div>');
+        $m.append($('<h3></h3>').text((milestone.achieved ? '✅ ' : '') + milestone.title));
+        $m.append($('<p></p>').text(milestone.description || ''));
+        $list.append($m);
       });
     },
     error: function(xhr, status, error) {
       console.error('Error fetching stats:', error);
+      if (xhr.status === 401) { // token expired / invalid
+        localStorage.removeItem('token');
+        window.location.href = '/login.html';
+        return;
+      }
       alert('Failed to fetch player stats. Please try again later.');
     }
   });
 }
+});

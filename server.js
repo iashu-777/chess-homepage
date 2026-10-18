@@ -1,160 +1,138 @@
+// Load .env FIRST, before anything reads process.env
+require('dotenv').config();
+
+const path = require('path');
+const http = require('http');
 const express = require('express');
-const http = require('http'); // Shared server for Express and Socket.IO
-const { Server } = require('socket.io'); // Import Socket.IO
 const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const Match = require('./models/Match'); // Import Match model
-const statsRoute=require('./routes/stats');
-dotenv.config();
+const { Server } = require('socket.io');
 
-const PORT = 3000;
+const authRoutes = require('./routes/auth');
+const Match = require('./models/Match');
+
+const PORT = process.env.PORT || 3000;
+const MONGO_URI = process.env.MONGO_URI;
+
+if (!MONGO_URI) {
+    console.error('MONGO_URI missing hai. .env.example ko copy karke .env banao aur values bharo.');
+    process.exit(1);
+}
+
 const app = express();
-const server = http.createServer(app); // Shared HTTP server
-app.use(cors({
-    origin: 'https://prismatic-lamington-297b85.netlify.app', // Aapka frontend URL
-    methods: ['GET', 'POST', 'PUT', 'DELETE','OPTIONS'],
-    credentials: true
-}));
-const io = new Server(server, {
-    cors: {
-        origin: 'https://prismatic-lamington-297b85.netlify.app',
-        methods: ['GET', 'POST','OPTIONS'],
-        allowedHeaders: ['Content-Type'],
-        credentials: true
-    },
-});
+const server = http.createServer(app); // Express + Socket.IO share one server
+// Frontend is served by this same server (same origin), so no CORS setup is needed in development.
+const io = new Server(server);
 
+// ---------- Middleware ----------
+app.use(express.json());
+app.use(express.static(path.join(__dirname, 'public')));          // HTML/CSS/JS
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // profile pictures
+
+// ---------- Routes ----------
+app.use('/auth', authRoutes);
+
+// ---------- Multiplayer (Socket.IO) ----------
+const VALID_TIMES = [10, 15, 20];
+const waiting = { 10: [], 15: [], 20: [] }; // socket ids waiting for an opponent, per time control
+const games = {}; // socketId -> { matchId, opponentId, color }
 let totalPlayers = 0;
-let players = {}; // Store active players' socket IDs
-let waiting = {
-    '10': [],
-    '15': [],
-    '20': [],
-};
-let gameStates = {}; // Temporary in-memory store
-let reconnectionTimeouts = {}; // Store reconnection timeout IDs for each player
 
-// Middleware
-app.use(express.json()); // Parse JSON payloads
-app.use(express.static('public'));
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    credentials: true,
-}));
-
-const authRoutes = require('./routes/auth'); // Import auth routes
-// Routes
-app.use('/auth', authRoutes); // Auth routes
-app.use('/stats',statsRoute); 
-app.get('/', (req, res) => res.send('Server is running!'));
-
-// MongoDB connection
-mongoose
-    .connect(MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
-    .then(() => console.log('Connected to MongoDB'))
-    .catch((err) => {
-        console.error('Error connecting to MongoDB:', err);
-        process.exit(1); // Stop server if DB connection fails
-    });
-
-// API route for fetching match details (for debugging or frontend)
-app.get('/matches', async (req, res) => {
-    try {
-        const matches = await Match.find();
-        res.json(matches);
-    } catch (err) {
-        console.error('Error fetching matches:', err);
-        res.status(500).json({ error: 'Internal Server Error' });
-    }
-});
-
-// Utility Functions
-async function createMatch(player1, player2, time) {
-    const match = new Match({ player1, player2, time });
-    await match.save();
-    return match;
-}
-
-async function updateMatch(matchId, fen, turn) {
-    try {
-        await Match.findByIdAndUpdate(matchId, { fen, turn, updatedAt: Date.now() });
-    } catch (err) {
-        console.error(`Error updating match ${matchId}:`, err);
+function removeFromWaiting(socketId) {
+    for (const time of VALID_TIMES) {
+        waiting[time] = waiting[time].filter((id) => id !== socketId);
     }
 }
 
-function removeSocketFromWaitingPeriod(socket) {
-    Object.keys(waiting).forEach((time) => {
-        const index = waiting[time].indexOf(socket.id);
-        if (index > -1) waiting[time].splice(index, 1);
-    });
+async function endGame(socketId, result) {
+    const game = games[socketId];
+    if (!game) return;
+    const { matchId, opponentId } = game;
+    delete games[socketId];
+    delete games[opponentId];
+    io.to(opponentId).emit('game_over_from_server', result);
+    try {
+        await Match.findByIdAndUpdate(matchId, { winner: result.winner, reason: result.reason, updatedAt: Date.now() });
+    } catch (err) {
+        console.error('Error saving game result:', err.message);
+    }
 }
 
-function setupListeners(socket, matchId, opponentId) {
-    socket.on('sync_state', async (fen, turn) => {
-        await updateMatch(matchId, fen, turn);
-        players[opponentId]?.emit('sync_state_from_server', fen, turn);
-    });
-
-    socket.on('game_over', async (winner) => {
-        try {
-            await Match.findByIdAndUpdate(matchId, { winner });
-            players[opponentId]?.emit('game_over_from_server', winner);
-            delete players[socket.id];
-            delete players[opponentId];
-        } catch (err) {
-            console.error('Error handling game over:', err);
-        }
-    });
-}
-
-// Socket.IO Logic
 io.on('connection', (socket) => {
     totalPlayers++;
     io.emit('total_players_count_change', totalPlayers);
 
     socket.on('want_to_play', async (time) => {
-        players[socket.id] = socket;
+        time = Number(time);
+        if (!VALID_TIMES.includes(time) || games[socket.id]) return;
+        removeFromWaiting(socket.id); // avoid double-queueing on repeated clicks
 
-        if (waiting[time]?.length) {
-            const opponentId = waiting[time].shift();
-            const match = await createMatch(opponentId, socket.id, time);
-            players[opponentId]?.emit('match_made', 'w', time, match._id);
-            socket.emit('match_made', 'b', time, match._id);
-            setupListeners(players[opponentId], match._id, socket.id);
-            setupListeners(socket, match._id, opponentId);
-        } else {
-            waiting[time].push(socket.id);
+        // Pick the first waiting player who is still connected
+        let opponentId;
+        while (waiting[time].length && !opponentId) {
+            const id = waiting[time].shift();
+            if (io.sockets.sockets.get(id)) opponentId = id;
         }
+
+        if (!opponentId) {
+            waiting[time].push(socket.id);
+            return;
+        }
+
+        try {
+            const match = await Match.create({ player1: opponentId, player2: socket.id, time });
+            const matchId = match._id.toString();
+            games[opponentId] = { matchId, opponentId: socket.id, color: 'w' };
+            games[socket.id] = { matchId, opponentId, color: 'b' };
+            io.to(opponentId).emit('match_made', 'w', time, matchId);
+            socket.emit('match_made', 'b', time, matchId);
+        } catch (err) {
+            console.error('Error creating match:', err.message);
+            socket.emit('server_error', 'Match create nahi ho paya, dobara try karo.');
+        }
+    });
+
+    socket.on('sync_state', async (fen, turn) => {
+        const game = games[socket.id];
+        if (!game) return;
+        io.to(game.opponentId).emit('sync_state_from_server', fen, turn);
+        try {
+            await Match.findByIdAndUpdate(game.matchId, { fen, turn, updatedAt: Date.now() });
+        } catch (err) {
+            console.error('Error updating match:', err.message);
+        }
+    });
+
+    // result = { winner: 'White' | 'Black' | null, reason: 'checkmate' | 'draw' | 'timeout' | ... }
+    socket.on('game_over', (result) => endGame(socket.id, result));
+
+    socket.on('time_out', () => {
+        const game = games[socket.id];
+        if (!game) return;
+        const winner = game.color === 'w' ? 'Black' : 'White';
+        socket.emit('game_over_from_server', { winner, reason: 'timeout' });
+        endGame(socket.id, { winner, reason: 'timeout' });
     });
 
     socket.on('disconnect', () => {
-        totalPlayers--;
+        totalPlayers = Math.max(0, totalPlayers - 1);
         io.emit('total_players_count_change', totalPlayers);
-        removeSocketFromWaitingPeriod(socket);
-        delete players[socket.id];
-    });
-
-    socket.on('reconnect', () => {
-        console.log(`Player ${socket.id} reconnected.`);
-        const opponentId = findOpponent(socket.id);
-        if (opponentId && players[opponentId]) {
-            players[opponentId].emit('opponent_reconnected');
-
-            if (reconnectionTimeouts[socket.id]) {
-                clearTimeout(reconnectionTimeouts[socket.id]);
-                delete reconnectionTimeouts[socket.id];
-            }
+        removeFromWaiting(socket.id);
+        const game = games[socket.id];
+        if (game) {
+            const winner = game.color === 'w' ? 'Black' : 'White';
+            endGame(socket.id, { winner, reason: 'opponent_disconnected' });
         }
     });
 });
 
-// Start the server
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+// ---------- Start ----------
+mongoose
+    .connect(MONGO_URI)
+    .then(() => {
+        console.log('Connected to MongoDB');
+        server.listen(PORT, () => console.log(`Server running: http://localhost:${PORT}`));
+    })
+    .catch((err) => {
+        console.error('MongoDB connect nahi hua:', err.message);
+        process.exit(1);
+    });

@@ -4,11 +4,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chess 2024 by Ashu</title>
+    <title>Play Online - Chess Arena</title>
 
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
-        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <script src="js/libs/jquery-3.6.0.min.js"></script>
 
     <!-- Chessboard.js -->
     <script src="/lib/chess.js"></script>
@@ -20,9 +19,8 @@
     <link rel="stylesheet" href="/style_multiplayer.css">
 
     <!-- Socket.io -->
-    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"
-        integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO"
-        crossorigin="anonymous"></script>
+    <!-- Served automatically by our own Socket.IO server (always matches the server version) -->
+    <script src="/socket.io/socket.io.js"></script>
 
     <!-- Disconnection Modal Styles -->
     <style>
@@ -71,14 +69,14 @@
                 </ul>
             </li>
             <li><a href="login.html" class="menu text-white">Login</a></li>
-            <li><a href="sign_up.html" class="menu text-white">Sign Up</a></li>
+            <li><a href="signup.html" class="menu text-white">Sign Up</a></li>
         </ul>
     </aside>
 
     <!-- Main Content -->
     <div class="main-content">
         <p id="total_players">Total Players: 0</p>
-        <h1 style="text-align: center; color: #ffdf00;">Chess Game 2026</h1>
+        <h1 style="text-align: center; color: #ffdf00;">Chess Arena</h1>
 
         <div id="main-element" class="display-f">
             <div id="myBoard" style="width: 450px;"></div>
@@ -100,8 +98,7 @@
 
     <!-- Chessboard.js Scripts -->
     
-    <!-- <script src="/lib/chessboardjs/js/chessboard-1.0.0.min.js"></script> -->
-    <script src='lib\chessboardjs\js\chessboard-1.0.0.js'></script>
+    <script src="/lib/chessboardjs/js/chessboard-1.0.0.min.js"></script>
     <!-- Custom Multiplayer JS -->
     <script src="/script_multiplayer.js"></script>
     

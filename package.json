@@ -1,55 +1,25 @@
 {
   "name": "chess-arena",
   "version": "1.0.0",
-  "description": "A multiplayer chess game built with Vue, Vite, Express, and Socket.io",
-  "main": "socket.js",
+  "description": "Chess Arena - multiplayer chess (Express + Socket.IO + MongoDB) and play vs Stockfish",
+  "main": "server.js",
+  "scripts": {
+    "dev": "node --watch server.js",
+    "start": "node server.js"
+  },
   "dependencies": {
-    "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.3",
-    "child_process": "^1.0.2",
-    "connect-timeout": "^1.9.0",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
-    "fs": "^0.0.1-security",
-    "http": "^0.0.1-security",
-    "http-proxy-middleware": "^3.0.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.8.2",
-    "mongosh": "^2.3.4",
     "multer": "^1.4.5-lts.1",
-    "socket.io": "^4.8.1",
-    "socket.io-client": "^4.8.1",
-    "stockfish": "^16.0.0",
-    "user": "^0.0.0",
-    "vite": "^5.4.10",
-    "vue": "^3.5.12"
-  },
-  "devDependencies": {
-    "@vitejs/plugin-vue": "^4.0.0",
-    "pm2": "^5.3.0"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "start": "pm2 start server.js",
-    "serve": "vite preview",
-    "stop": "pm2 stop all",
-    "restart": "pm2 restart all"
+    "socket.io": "^4.8.1"
   },
   "engines": {
-    "node": ">=14.x"
+    "node": ">=18.11"
   },
-  "keywords": [
-    "chess",
-    "multiplayer",
-    "vue",
-    "vite",
-    "socket.io",
-    "express"
-  ],
+  "keywords": ["chess", "multiplayer", "socket.io", "express", "stockfish"],
   "author": "Ashish",
-  "license": "MIT",
-  "proxy": "https://chess-homepage-production.up.railway.app"
+  "license": "MIT"
 }

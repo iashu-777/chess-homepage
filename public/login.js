@@ -1,5 +1,5 @@
 $(document).ready(function () {
-    $('#loginButton').on('click', function (e) {
+    $('#loginForm').on('submit', function (e) {
         e.preventDefault(); // Prevent default form submission
 
         const username = $('#username').val().trim(); // Get username input value
@@ -11,10 +11,8 @@ $(document).ready(function () {
             return;
         }
 
-        // Determine the backend URL based on the environment
-const apiUrl = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-? 'http://localhost:3000/auth/login'  // Local development
-: 'https://chess-homepage-production.up.railway.app/auth/login';  // Production URL
+        // Frontend and backend run on the same server, so a relative URL works
+        const apiUrl = '/auth/login';
 
         // Call the login API
         $.ajax({
